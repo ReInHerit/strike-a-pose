@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Start game</title>
+  <link rel = "icon" type="image/x-icon" href="/static/assets/favicon.ico">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous" />
+  <link rel="stylesheet" type="text/css" href="/static/styles/style.css" />
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
+    integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
+    crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+    integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
+  <script type="text/javascript" src="/static/js/startModule.js"></script>
+  <script type="module" src="/static/js/start.js"></script>
+</head>
+
+<body class="d-flex flex-column align-items-center p-4 background" background="/static/assets/La_Primavera-Botticelli.jpg">
+  <div style="display: none;" id="fade">
+    <div class="d-flex align-items-center justify-content-center" style="height: 100%;">
+      <div class="spinner-border text-light" style="width: 10rem; height: 10rem;" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
+    </div>
+  </div>
+  <button type="button" class="btn btn-primary ml-auto" id="logout_btn" onclick="logout()">LOGOUT</button>
+  <img src="/static/assets/logo.png" class="logo_mini" id="logo_start" />
+  <div id="level-list">
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="row">
+          <h4 class="card-title col-md-3 col-sm-12">Player vs Player</h4>
+          <div class="button col-md-9 col-sm-12">
+            <div class="container" id="container-host">
+              <button type="button" class="btn btn-primary btn-block mb-3" onclick="playButtons(false)" id="host">HOST</button>
+              <form action="{{ url_for('start_post') }}" method="post" id="form-host">
+                {{ form.hidden_tag() }}
+                <div class="input-group mt-3 mb-3">
+                  <div class="input-group-prepend">
+                    {{ form.n_round.label(class="input-group-text") }}
+                  </div>
+                  {{ form.n_round(class="custom-select", id="nRound", value=n_round) }}
+                </div>
+
+                <div class="input-group mb-3">
+                  <div class="input-group-prepend">
+                    {{ form.n_pose.label(class="input-group-text") }}
+                  </div>
+                  {{ form.n_pose(class="custom-select", id="nPose", value=n_pose) }}
+                </div>
+                {{ form.submit(class="btn btn-primary btn-block") }}
+                <input class="form-control mt-3 mb-3" type="text" value="Room ID: {{ room }}" readonly id="room-id">
+              </form>
+            </div>
+            <div class="container mb-3" id="container-join">
+              <button type="button" class="btn btn-primary btn-block" onclick="playButtons(true)"
+                id="join">JOIN</button>
+              <form action="javascript:join()" method="POST" id="form-join">
+                {{ form.hidden_tag() }}
+                <div class="input-group mt-3 mb-3">
+                  {{ join_form.room_id(id="room-join-id", class="form-control", placeholder="Room ID") }}
+                  <div class="input-group-append">
+                    {{join_form.submit(class="btn btn-primary")}}
+                  </div>
+                </div>
+                <p style="color: red;" id="error"></p>
+              </form>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="custom-control custom-switch">
+          <input type="checkbox" class="custom-control-input" id="toggle">
+          <label class="custom-control-label" for="toggle"></label>
+        </div>
+      </div>
+    </div>
+    {% for level in levels %}
+    <div class="card mb-3">
+      <div class="card-body">
+        <h2 class="card-title">{{ level.name }}</h2>
+        <h5 class="card-subtitle mb-2 text-muted">{{ level.as_dict().get('picture_ids')|length }} artworks </h5>
+        <p class="card-text">
+          {{ level.description }}
+        </p>
+        <button type="button" class="btn btn-primary btn-block play"
+          onclick="play(['{{room }}','{{ level.id }}','{{ level.as_dict().get('picture_ids')|length }}'])">PLAY</button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</body>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"
+  integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js"
+  integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+</html>
