@@ -1,0 +1,5 @@
+venv 
+__pycache__
+back-end/static/videos
+back-end/database.db
+**/.DS_Store

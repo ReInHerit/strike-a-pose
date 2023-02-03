@@ -1,0 +1,7 @@
+FROM nginx
+
+RUN apt update
+RUN apt install openssl -y
+RUN openssl req -newkey rsa:4096 -x509 -sha256 -days 365 -nodes -subj "/C=IT/ST=Firenze/L=Firenze/O=UNIFI/OU=MICC/CN=strikeapose.it" -out /etc/ssl/certificate.crt -keyout /etc/ssl/private.key
+
+COPY ./nginx.conf /etc/nginx/conf.d/default.conf
