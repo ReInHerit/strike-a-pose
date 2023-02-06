@@ -1,6 +1,18 @@
 # ReInHerit Strike-a-pose
 
 
+**Gamification** is the process of exploiting strategies and game dynamics into scenarios that are not a game. 
+It has already been proved to be useful to enhance skills and competences in a variety of domains such as marketing, industry training and entertainment.
+Also cultural heritage can benefit from a gamification approach which represents an opportunity to **engage visitors** to museums contents through the design of more entertaining, social and challenging digital learning scenarios, to help museums to move from the traditional “look and do not touch” toward a “play and interact” approach. 
+
+Strike-a-pose is a web application which performs analysis and evaluation of human poses compared to poses present in famous paintings or statues. 
+The user is challenged to reproduce in sequence the poses of some artworks from the museum's collections. 
+Once all the poses have been matched, the application allows the user to **generate a video** that can be saved for any social sharing and provide info on the artworks. 
+The video shows the user matching process and the overall interactive experience lived at the museum.
+
+This app won a Best Demo Honorable Mention award at ACM Multimedia 2022, the foremost conference on multimedia.
+
+
 ## System set-up
 
 ### Web domain setup
