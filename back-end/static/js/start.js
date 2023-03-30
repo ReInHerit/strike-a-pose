@@ -36,7 +36,8 @@ async function host(attrs) {
     $("#fade").addClass("fade-me");
     $("#fade").show();
     
-    socket = io.connect('https://strikeapose.it/');
+    const serverUrl = `${window.location.protocol}//${window.location.hostname}`;
+    const socket = io.connect(serverUrl);
 
     socket.on("status", (status) => {
         console.log("status: " + status.data);
@@ -76,7 +77,8 @@ window.join = async function() {
         const resp = await getRoom(roomId);
         console.log(resp);
 
-        socket = io.connect('https://strikeapose.it/');
+        const serverUrl = `${window.location.protocol}//${window.location.hostname}`;
+        const socket = io.connect(serverUrl);
 
         socket.on("status", (status) => {
             console.log("status: " + status.data);

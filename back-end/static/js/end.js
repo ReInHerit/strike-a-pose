@@ -19,7 +19,8 @@ $(async () => {
   }else if(player.normalize() === "winner".normalize()){
     endImg.src = "/static/assets/end/winner.gif";
     endText.innerHTML = "Your opponent withdrawn, you win!";
-    socket = io.connect("https://strikeapose.it/");
+    const serverUrl = `${window.location.protocol}//${window.location.hostname}`;
+    const socket = io.connect(serverUrl);
     roomId = localStorage.getItem("roomId");
     socket.emit("end", roomId);
     socket.on("endGame", (msg) => {
@@ -29,7 +30,8 @@ $(async () => {
     endImg.src = "/static/assets/end/loadWinner.gif";
     endText.innerHTML = "Waiting for the opponent...";
 
-    socket = io.connect("https://strikeapose.it/");
+    const serverUrl = `${window.location.protocol}//${window.location.hostname}`;
+    const socket = io.connect(serverUrl);
     roomId = localStorage.getItem("roomId");
     socket.emit("join", roomId, null);
     socket.emit("acquireResults", roomId);

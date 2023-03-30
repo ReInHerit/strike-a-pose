@@ -28,7 +28,8 @@ $(async () => {
     document.getElementById("canvas-container-img").style.height = "42%";
     document.getElementById("canvas-container-cam").style.height = "46%";
     const picturesArray = JSON.parse(localStorage.getItem("picturesArray"));
-    socket = io.connect('https://strikeapose.it/');
+    const serverUrl = `${window.location.protocol}//${window.location.hostname}`;
+    const socket = io.connect(serverUrl);
     roomId = localStorage.getItem("roomId");
     socket.emit("join", roomId, null);
 

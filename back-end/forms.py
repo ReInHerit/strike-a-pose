@@ -3,12 +3,12 @@ from wtforms import StringField, PasswordField, SubmitField, SelectField
 from wtforms.validators import DataRequired, Email
 
 class RegistrationForm(FlaskForm):
-    email = StringField("Email", validators = [DataRequired("Email is required"), Email("Wrong email syntaxt")])
+    email = StringField("Email", validators = [DataRequired("Email is required"), Email("Wrong email syntax")])
     password = PasswordField("Password", validators=[DataRequired("Password is required")])
     submit = SubmitField("Signup")
 
 class LoginForm(FlaskForm):
-    email = StringField("Email", validators=[DataRequired("Email is required"), Email("Wrong email syntaxt")])
+    email = StringField("Email", validators=[DataRequired("Email is required"), Email("Wrong email syntax")])
     password = PasswordField("Password", validators=[DataRequired("Password is required")])
     submit = SubmitField("Login")
 

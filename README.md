@@ -21,6 +21,10 @@ This app won a Best Demo Honorable Mention award at ACM Multimedia 2022, the for
 
 ### Web domain setup
 
+If a domain with HTTPS is available simply use the standalone Dockerfile. E.g. that DOckerfile allows to deploy the app on Heroku.
+Otherwise use the docker-compose approach that spins a docker container with an nginx server and a custom SSL certificate that exposes the docker with Flask and app as HTTPS to access the camera through the web browser.
+In this second option the operation is a bit complex, as follows.
+
 Add the following line to the `/etc/hosts` file of the computer where the docker containers are running:
 
 ```
@@ -45,7 +49,7 @@ point to the server IP address), as in:
 <SERVER_IP> strikeapose.it
 # End
 ```
-**<SERVER_IP>** è l'indirizzo ip del computer che ha in esecuzione i container docker
+**<SERVER_IP>** is the IP address of the computer where the containers are executed.
 
 ### Docker setup
 

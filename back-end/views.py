@@ -17,9 +17,11 @@ from sqlalchemy import exc
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+
 @login_manager.user_loader
 def load_user(id):
     return User.query.get(id)
+
 
 @app.route("/", methods=["GET"])
 def index():
@@ -27,18 +29,26 @@ def index():
     form = LoginForm()
     return render_template("index.html", form=form)
 
+
 @app.route("/login", methods=["POST"])
 def login():
     form = LoginForm()
-    if form.validate_on_submit():
+    if form.validate_on_submit:
         email = form.email.data
         password = form.password.data
+        print(email, password)
         user = User.query.filter_by(email=email).one_or_none()
         if not user or not user.check_password(password):
             error = "Wrong username or password"
+            print(error)
             return render_template("index.html", form=form, error=error)
         login_user(user)
+        print("login succesfull")
         return redirect(url_for("start"))
+    else:
+        error = "Can not validate form"
+        return render_template("index.html", form=form, error=error)
+
 
 @app.route("/signup", methods=["GET"])
 def index_signup():
@@ -64,6 +74,7 @@ def signup():
             return render_template("index.html", form=form, error=error)
         return render_template("index.html", form=LoginForm())
 
+
 @app.route("/start", methods=["GET"])
 @login_required
 def start():
@@ -79,9 +90,11 @@ def start():
     form.n_round.default = n_round
     form.n_pose.default = n_pose
     form.process()
-    return render_template("start.html", form=form, join_form=JoinRoomForm(), levels=Level.query.all(), room=room_id )
+    return render_template("start.html", form=form, join_form=JoinRoomForm(), levels=Level.query.all(), room=room_id)
+
 
 rooms = []
+
 
 @app.route("/start", methods=["POST"])
 @login_required
@@ -95,13 +108,14 @@ def start_post():
             exist = next((x for x in rooms if x.id == id), None)
         n_round = int(form.n_round.data)
         n_pose = int(form.n_pose.data)
-        my_room = Room(id,n_pose,n_round)
+        my_room = Room(id, n_pose, n_round)
         rooms.append(my_room)
         session["room_id"] = id
         session["n_round"] = n_round
         session["n_pose"] = n_pose
         return redirect(url_for("start"))
     return render_template("start.html", form=form, join_form=JoinRoomForm(), levels=Level.query.all())
+
 
 @app.route("/join/<id>", methods=["GET"])
 @login_required
@@ -113,6 +127,7 @@ def join(id):
         return jsonify("There is no host in the room"), 400
     return jsonify(my_room.to_string())
 
+
 @app.route("/room", methods=["POST"])
 @login_required
 def room():
@@ -123,6 +138,7 @@ def room():
     my_room.level = level
     my_room.n = n
     return jsonify(my_room.to_string())
+
 
 @app.route("/delete/room/<id>", methods=["GET"])
 @login_required
@@ -140,6 +156,7 @@ def delete_room(id):
 def get_rooms():
     return render_template("rooms.html", rooms=rooms)
 
+
 @app.route("/game", methods=["GET"])
 @login_required
 def game():
@@ -153,7 +170,7 @@ def game():
     except:
         return redirect(url_for("start"))
     return redirect(url_for("start"))
-    
+
 
 @app.route("/user/me", methods=["GET"])
 @login_required
@@ -219,10 +236,12 @@ def post_video():
     db.session.commit()
     return jsonify(new_video.as_dict())
 
+
 @app.route("/videos/<id>", methods=["GET"])
 def get_video(id):
     video = Video.query.get(int(id))
     return jsonify(video.as_dict())
+
 
 @app.route("/end", methods=["GET"])
 @login_required
@@ -236,43 +255,46 @@ def end():
         return redirect(url_for("start"))
     return redirect(url_for("start"))
 
+
 @app.route("/logout", methods=["GET"])
 @login_required
 def logout():
     logout_user()
     return redirect(url_for("index"))
 
+
 @socketio.on("connect")
 def connect():
-    emit("status", { "data": "connection established!" });
+    emit("status", {"data": "connection established!"});
 
 
 @socketio.on("join")
 @login_required
-def on_join(room_id,level):
+def on_join(room_id, level):
     user = current_user
     my_room = next((x for x in rooms if x.id == int(room_id)), None)
-    
+
     if my_room is None:
-        emit("errorRoom",f"room {room_id} doesn't exist")
+        emit("errorRoom", f"room {room_id} doesn't exist")
         return
 
     if user.email in my_room.clients:
         send(f"{user.email} has already in the room")
         send(f"room {my_room.id}: {my_room.to_string()}")
-        return 
+        return
 
     if my_room.num_clients == 2:
         my_room.free = False
-        emit("error","sorry, room is full")
+        emit("error", "sorry, room is full")
         return
-
 
     join_room(my_room.id)
     my_room.clients.append(user.email)
     my_room.num_clients += 1
-    emit("room_message", f"Welcome to room {my_room.id}, number of clients connected: {my_room.num_clients}, clients connected: {my_room.clients}", to=my_room.id)
-    
+    emit("room_message",
+         f"Welcome to room {my_room.id}, number of clients connected: {my_room.num_clients}, clients connected: {my_room.clients}",
+         to=my_room.id)
+
     if my_room.num_clients == 2:
         if level is not None:
             levelModel = Level.query.get(int(level))
@@ -280,9 +302,10 @@ def on_join(room_id,level):
             random.shuffle(shufflePictures)
             emit("play", shufflePictures, to=my_room.id)
 
+
 @socketio.on("leave")
 @login_required
-def on_leave(room_id,retired):
+def on_leave(room_id, retired):
     user = current_user
     my_room = next((x for x in rooms if x.id == int(room_id)), None)
     leave_room(my_room.id)
@@ -296,16 +319,18 @@ def on_leave(room_id,retired):
         emit("leave_message", f"Bye {current_user.email} from room {my_room.id}")
     send(f"{my_room.to_string()}")
 
+
 @socketio.on("sendResults")
 @login_required
-def on_sendResults(room_id,results):
+def on_sendResults(room_id, results):
     my_room = next((x for x in rooms if x.id == int(room_id)), None)
     if my_room.results[0] is None:
         my_room.results[0] = results
-        emit("results_received","1")
+        emit("results_received", "1")
     else:
         my_room.results[1] = results
-        emit("results_received","2")
+        emit("results_received", "2")
+
 
 @socketio.on("acquireResults")
 @login_required
@@ -313,7 +338,8 @@ def on_acquireResults(room_id):
     my_room = next((x for x in rooms if x.id == int(room_id)), None)
     if my_room.num_clients == 2:
         if my_room.results[0] is not None and my_room.results[1] is not None:
-            emit("getResults",my_room.results,to=my_room.id)
+            emit("getResults", my_room.results, to=my_room.id)
+
 
 @socketio.on("leaveGame")
 @login_required
@@ -323,7 +349,8 @@ def on_leaveGame(room_id):
     leave_room(my_room.id)
     my_room.clients.remove(user.email)
     my_room.num_clients -= 1
-    emit("user_retired", to=my_room.id) 
+    emit("user_retired", to=my_room.id)
+
 
 @socketio.on("end")
 @login_required
@@ -334,5 +361,3 @@ def on_end(room_id):
         emit("endGame", "Successfully deleted room", to=my_room.id)
     else:
         send("This room doesn't exsits")
-
-    

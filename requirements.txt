@@ -8,3 +8,4 @@ Flask-WTF
 email_validator
 opencv-python
 waitress
+gunicorn
