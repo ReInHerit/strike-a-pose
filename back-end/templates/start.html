@@ -28,14 +28,27 @@
       </div>
     </div>
   </div>
-  <button type="button" class="btn btn-primary ml-auto" id="logout_btn" onclick="logout()">LOGOUT</button>
-  <img src="/static/assets/logo.png" class="logo_mini" id="logo_start" />
+  <div id="start">
+    <div id="top">
+      <p>User's Random ID: <span id="user-random-id"></span></p>
+      <button type="button" class="btn btn-primary ml-auto" id="logout_btn" onclick="logout()">LOGOUT</button>
+    </div>
+    <img src="/static/assets/logo.png" class="logo_mini" id="logo_start" />
+
+  </div>
+
   <div id="level-list">
     <div class="card mb-3">
       <div class="card-body">
+        <div id="title-row" class="custom-control custom-switch">
+          <h4 class="card-title col-md-5 col-sm-12">Player vs Player</h4>
+          <div id="input-checkbox">
+            <input type="checkbox" class="custom-control-input" id="toggle">
+            <label class="custom-control-label" for="toggle"></label>
+          </div>
+        </div>
         <div class="row">
-          <h4 class="card-title col-md-3 col-sm-12">Player vs Player</h4>
-          <div class="button col-md-9 col-sm-12">
+          <div class="button col-md-16 col-sm-12">
             <div class="container" id="container-host">
               <button type="button" class="btn btn-primary btn-block mb-3" onclick="playButtons(false)" id="host">HOST</button>
               <form action="{{ url_for('start_post') }}" method="post" id="form-host">
@@ -57,7 +70,7 @@
                 <input class="form-control mt-3 mb-3" type="text" value="Room ID: {{ room }}" readonly id="room-id">
               </form>
             </div>
-            <div class="container mb-3" id="container-join">
+            <div class="container" id="container-join">
               <button type="button" class="btn btn-primary btn-block" onclick="playButtons(true)"
                 id="join">JOIN</button>
               <form action="javascript:join()" method="POST" id="form-join">
@@ -71,13 +84,7 @@
                 <p style="color: red;" id="error"></p>
               </form>
             </div>
-
           </div>
-        </div>
-
-        <div class="custom-control custom-switch">
-          <input type="checkbox" class="custom-control-input" id="toggle">
-          <label class="custom-control-label" for="toggle"></label>
         </div>
       </div>
     </div>

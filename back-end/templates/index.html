@@ -16,31 +16,7 @@
   <body class="background p-4" background="/static/assets/La_Scuola_di_Atene-Raffaello_Sanzio.jpg">
     <div class="div_index">
       <img src="/static/assets/logo.png" class="logo" />
-      <div class="card" id="signup_box">
-        <div class="card-body">
-          {% set endpoint = form.submit.label.text %}
-          <form action="{{ url_for(endpoint.lower()) }}" method="post" id="login-form">
-            {{ form.hidden_tag() }}
-            <fieldset>
-              {{ form.email.label(class="form-email") }}
-              {{ form.email(class="form-control mb-2") }}
-            </fieldset>
-
-            <fieldset>
-              {{ form.password.label(class="form-email") }}
-              {{ form.password(class="form-control mb-2") }}
-            </fieldset>
-
-            <p style="color: red;">{{ error }}</p>
-            {{ form.submit(class="btn btn-primary btn-block mb-2", disabled=True) }}
-          </form>
-          {% if endpoint == "Login" %}
-            <div>Not registered yet? <a href="/signup" style="color: #ff5733">Signup</a></div>
-          {% else %}
-            <div>Are you already registered? <a href="/" style="color: #ff5733">Login </a></div>
-          {% endif %}
-        </div>
-      </div>
+      <p id="app-container"></p>
 
     </div>
   </body>

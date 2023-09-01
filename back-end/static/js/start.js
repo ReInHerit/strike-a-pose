@@ -1,7 +1,9 @@
 import { setRoomAttr, getRoom } from "./scripts/fetchUtils.js";
+import { Config } from "./scripts/config.js";
+// import { Config } from "./scripts/config";
 
-var socket = undefined;
-var roomId;
+let socket = undefined;
+let roomId;
 
 window.play = function (attrs) {
     const level = attrs[1];
@@ -25,7 +27,7 @@ async function host(attrs) {
     const data = await setRoomAttr(roomId, level, n);
     console.log(data)
 
-    //const data = await getRoom(roomId);
+    //const data = await Room(roomId);
     const nRound = data.n_round;
     const nPose = data.n_pose;
     if (nPose > n) {
@@ -35,9 +37,9 @@ async function host(attrs) {
 
     $("#fade").addClass("fade-me");
     $("#fade").show();
-    
-    const serverUrl = `${window.location.protocol}//${window.location.hostname}`;
-    const socket = io.connect(serverUrl);
+
+    const serverUrl = Config.SERVER_URL // `${window.location.protocol}//${window.location.hostname}`;
+    socket = io.connect(serverUrl);
 
     socket.on("status", (status) => {
         console.log("status: " + status.data);
@@ -77,8 +79,8 @@ window.join = async function() {
         const resp = await getRoom(roomId);
         console.log(resp);
 
-        const serverUrl = `${window.location.protocol}//${window.location.hostname}`;
-        const socket = io.connect(serverUrl);
+        const serverUrl = Config.SERVER_URL // `${window.location.protocol}//${window.location.hostname}`;
+        socket = io.connect(serverUrl);
 
         socket.on("status", (status) => {
             console.log("status: " + status.data);
@@ -124,7 +126,7 @@ function play2(nPose, nRound) {
 }
 
 window.logout = function() {
-    if(socket != undefined) {
+    if(socket !== undefined) {
         socket.emit("leave", roomId, false);
 
         socket.on("leave_message", (msg) => {

@@ -22,8 +22,7 @@ with app.app_context():
 			print('Failed to delete %s. Reason: %s' % (file_path, e))
 
 	db.create_all()
-	new_user = User(email="test@test.com",
-					password=bcrypt.generate_password_hash("1234"))
+	new_user = User()  # email="test@test.com", password=bcrypt.generate_password_hash("1234"))
 	db.session.add(new_user)
 
 	new_level = Level(name="Half bust",

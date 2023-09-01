@@ -23,15 +23,18 @@ export const getPicture = (id) =>
         })
     );
 
-export const getLevel = (id) =>
-    fetchJson(
-        fetch(`${Config.SERVER_URL}levels/${id}`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        })
-    );
+export const getLevel = async (id) => {
+  await tf.ready(); // Wait for TensorFlow.js to be ready
+
+  const response = await fetch(`${Config.SERVER_URL}levels/${id}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  return fetchJson(response);
+};
 
 export const postVideo = (formData) =>
     fetchJson(

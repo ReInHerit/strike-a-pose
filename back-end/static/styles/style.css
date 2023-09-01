@@ -18,9 +18,20 @@
   text-shadow: 4px 4px 6px black;
 }
 
+.custom-control {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: flex-start;
+  padding-left: 0;
+}
+.custom-control h4, #input-checkbox{
+  position: relative;
+  margin-bottom: 0;
+}
 #logout_btn{
-  position:sticky; 
-  top:10px;
+  position:relative;
+  /*top:10px;*/
 }
 
 #victoryImg{
@@ -28,7 +39,11 @@
   margin-left: auto;
   margin-right: auto;
 }
-
+#start{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 .logo {
   width: 16rem;
 }
@@ -37,7 +52,19 @@
   width: 4rem;
   margin-bottom: 1rem;
 }
-
+#top{
+  display: flex;
+  position: relative;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  width: 90vw;
+}
+#top p {
+    position: relative;
+    margin-bottom: 0;
+    color: white;
+}
 #logo_start{
   width: 10rem;
   margin-bottom: 2rem;
@@ -92,7 +119,9 @@ body {
   transform: scaleX(-1);
   background-color: rgba(0, 0, 0, 0.8);
 }
-
+#container-host, #container-join{
+  padding: 0;
+}
 #canvas-container-img, #canvas-container-imgSolo{
   height:44%;
 }
@@ -152,7 +181,7 @@ body {
 
 #level-list{
   position: relative;
-  top:20%;
+  /*top:20%;*/
 }
 
 #two-players{

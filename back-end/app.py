@@ -25,7 +25,7 @@ print(f"Using port: {port}")
 
 if __name__ == "__main__":
     # DEVELOPMENT CONFIG
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=port, debug=True)
 
     # PRODUCTION CONFIG
     # from waitress import serve

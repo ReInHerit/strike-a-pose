@@ -1,20 +1,22 @@
-import {checkValidity} from "./scripts/form.js";
-
 $(() => {
+    // Check if the user has a random ID already
 
-    const form = $("#login-form");
-    const email = $("input[name='email']");
-    const password = $("input[name='password']")
-    const submit = $(":submit");
-    const responseMessage = $("#response-message");
+    const appContainer = $("#app-container");
+    const welcomeMessage = $("<h2>").text("Welcome to the App!");
+    appContainer.append(welcomeMessage);
+    // If the user doesn't have an ID, generate one and store it in local storage
 
+    const randomId = generateRandomId();
+    localStorage.setItem("userId", randomId);
+    window.location.href = "start"; // Redirect to start.html
 
-    form.on("input", function () {
-        if (checkValidity(email.val(), password.val()))
-            submit.prop("disabled", false)
-        else
-            submit.prop("disabled", true);
-        responseMessage.empty();
-
-    });
 });
+
+function generateRandomId() {
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let id = "";
+    for (let i = 0; i < 10; i++) {
+        id += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return id;
+}

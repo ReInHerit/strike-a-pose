@@ -1,19 +1,13 @@
 from flask_login import UserMixin
 
-from app import *
+from app import db
 
 class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(255), unique=True, nullable=False)
-    password = db.Column(db.String(255), nullable=False)
+    id = db.Column(db.String(36), primary_key=True)
     videos = db.relationship('Video', backref='user', lazy=True)
 
-    def check_password(self, password):
-        return bcrypt.check_password_hash(self.password, password)
-
     def as_dict(self):
-        return {"id": self.id, "email": self.email}
-
+        return {"id": self.id}
 
 
 class Level(db.Model):
@@ -41,14 +35,14 @@ class Picture(db.Model):
 class Video(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     path = db.Column(db.String(255), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'),
+    user_id = db.Column(db.String(36), db.ForeignKey('user.id'),
                         nullable=False)
 
     def as_dict(self):
-        return {"id": self.id, "path": self.path}
+        return {"id": self.id, "path": self.path, 'user_id': self.user_id}
+
 
 class Room:
-
     def __init__(self, id, n_pose, n_round):
         self.id = id
         self.clients = []
