@@ -21,3 +21,5 @@ services:
       dockerfile: Dockerfile-flask
     volumes:
       - ./back-end:/usr/src/app
+    environment:
+      - PYTHONUNBUFFERED=1

@@ -107,15 +107,6 @@ def game():
         return redirect(url_for("start"))
     return redirect(url_for("start"))
 
-
-# @app.route("/user/me", methods=["GET"])
-# def user_me():
-#     # We can now access our sqlalchemy User object via `current_user`.
-#     return jsonify(
-#         current_user.as_dict()
-#     )
-
-
 @app.route("/pictures/", methods=["POST"])
 def post_picture():
     path = request.json.get("path", None)
@@ -153,152 +144,68 @@ def post_video():
         os.makedirs('static/videos')
     video_path = f'static/videos/{uuid.uuid4()}.mp4'
     out = cv2.VideoWriter(video_path, cv2.VideoWriter_fourcc(*'mp4v'), 14.0, (1024, 2048))
-    title_height = 376
-    picture_height = 1000
+
+    picture_height = 1118
+    center_row_height = 10
     frame_height = 672
-
+    bottom_row_height = 51
+    video_width = 1024
     # Load and resize the logo image
-    logo = cv2.imread('static/assets/logo.png')
-    logo_aspect_ratio = logo.shape[1] / logo.shape[0]
-    if logo_aspect_ratio > 1:
-        # Landscape (horizontal) logo
-        new_logo_width = 200
-        new_logo_height = int(new_logo_width / logo_aspect_ratio)
-    elif logo_aspect_ratio < 1:
-        # Portrait (vertical) logo
-        new_logo_height = 200
-        new_logo_width = int(new_logo_height * logo_aspect_ratio)
-    else:
-        # Square logo
-        new_logo_height = 200
-        new_logo_width = 200
-
-    logo_resized = cv2.resize(logo, (new_logo_width, new_logo_height))
-
-    # Create a black background for the title section
-    title_section = np.zeros((title_height, 1024, 3), np.uint8)
-    title_section[:] = (0, 0, 0)  # Black background
-    centered_logo_y = (title_height - new_logo_height) // 2
-    # Add the logo to the title section
-    title_section[centered_logo_y:centered_logo_y + new_logo_height, 25:new_logo_width + 25] = logo_resized
-
-    # Add the text title using OpenCV
-    text = 'STRIKE A POSE'
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 2
-    font_color = (255, 255, 255)  # White color
-    text_size = cv2.getTextSize(text, font, font_scale, 1)[0]
-    text_x = new_logo_width + 60
-    text_y = (title_height + text_size[1]) // 2
-    cv2.putText(title_section, text, (text_x, text_y), font, font_scale, font_color, 1, cv2.LINE_AA)
+    title_section = cv2.imread('static/assets/video_logo.png')
+    title_section_flipped = cv2.flip(title_section, 1)
+    center_row = np.zeros((center_row_height, video_width, 3), np.uint8)
+    center_row[5:10, :] = (52, 87, 255)
+    bottom_row = np.zeros((bottom_row_height, video_width, 3), np.uint8)
+    bottom_row[:] = 206
 
     for picture_id in request.form.getlist('picture_ids[]'):
         picture = Picture.query.get(int(picture_id))
         picture_image = cv2.imread(picture.path)
-        print('picture_shape: ', picture_image.shape)
+        print('picture_shape: ', picture_image.shape,' picture_path: ', picture.path, ' picture_id: ', picture_id)
         picture_aspect_ratio = picture_image.shape[1] / picture_image.shape[0]
+        print('picture_aspect_ratio: ', picture_aspect_ratio)
 
         if picture_aspect_ratio > 1:
+            print('Landscape (horizontal) picture')
             # Landscape (horizontal) picture
-            new_picture_width = 1024
+            new_picture_width = video_width
             new_picture_height = int(new_picture_width / picture_aspect_ratio)
+            if new_picture_height > picture_height:
+                new_picture_height = picture_height
+                new_picture_width = int(new_picture_height * picture_aspect_ratio)
         else:
+            print('Portrait (vertical) picture')
             # Portrait (vertical) picture
-            new_picture_height = 1000
+            new_picture_height = picture_height
             new_picture_width = int(new_picture_height * picture_aspect_ratio)
-
+            if new_picture_width > video_width:
+                new_picture_width = video_width
+                new_picture_height = int(new_picture_width / picture_aspect_ratio)
+        print('new_picture_width: ', new_picture_width, ' new_picture_height: ', new_picture_height)
         resized_picture_image = cv2.resize(picture_image, (new_picture_width, new_picture_height))
-        picture_section = np.zeros((1000, 1024, 3), np.uint8)
+        picture_section = np.zeros((picture_height, video_width, 3), np.uint8)
         picture_section[:] = (25, 25, 25)  # Black background
         # center resized picture image
-        centered_height = (1000 - new_picture_height) // 2
-        centered_width = (1024 - new_picture_width) // 2
+        centered_height = (picture_height - new_picture_height) // 2
+        centered_width = (video_width - new_picture_width) // 2
+        print('centered_height: ', centered_height, ' centered_width: ', centered_width)
+        print('picture_section_shape: ', picture_section.shape, ' resized_picture_image_shape: ', resized_picture_image.shape)
         picture_section[centered_height:centered_height + new_picture_height, centered_width:centered_width + new_picture_width] = resized_picture_image
 
         for file in request.files.getlist(f'frames_{picture_id}[]'):
             img = cv2.imdecode(np.fromstring(file.read(), np.uint8), cv2.IMREAD_COLOR)
-            resized_frame_image = cv2.resize(img, (1024, 672))
+            resized_frame_image = cv2.resize(img, (video_width, frame_height))
             # combine the 2 videos one up and one down
-            combined_images = np.concatenate((cv2.flip(title_section, 1), picture_section, resized_frame_image), axis=0)
+            combined_images = np.concatenate((title_section_flipped, resized_frame_image,center_row, picture_section, bottom_row), axis=0)
             flipped_combined_images = cv2.flip(combined_images, 1)
 
-            # Create a black frame for the combined images
-            black_frame = np.zeros((2048, 1024, 3), np.uint8)
-
-            # Calculate positions for pasting images
-            paste_start_row = (2048 - (title_height + picture_height + frame_height)) // 2
-            paste_end_row = paste_start_row + title_height + picture_height + frame_height
-            paste_start_col = 0
-            black_frame[paste_start_row:paste_end_row, paste_start_col:] = flipped_combined_images
-
-            # write the frame to the video
-            out.write(black_frame)
+            out.write(flipped_combined_images)
 
     out.release()
     new_video = Video(path=video_path, user_id=user_id)
     db.session.add(new_video)
     db.session.commit()
     return jsonify(new_video.as_dict())
-#
-# @app.route("/videos", methods=["POST"])
-# def post_video():
-#     print('Session contents:', session)  # Debug session contents
-#     user_id = request.form.get("user_id") # session.get("user_id")
-#     print('User ID:', user_id)
-#     if user_id is None:
-#         return jsonify({"error": "User not authenticated"}), 401  # Unauthorized status code
-#
-#     if not os.path.exists('static/videos'):
-#         os.makedirs('static/videos')
-#     video_path = f'static/videos/{uuid.uuid4()}.mp4'
-#     out = cv2.VideoWriter(video_path, cv2.VideoWriter_fourcc(*'mp4v'), 14.0, (1024, 2048))
-#
-#     total_height = 0
-#
-#     for picture_id in request.form.getlist('picture_ids[]'):
-#         picture = Picture.query.get(int(picture_id))
-#         picture_image = cv2.imread(picture.path)
-#         for file in request.files.getlist(f'frames_{picture_id}[]'):
-#             img = cv2.imdecode(np.fromstring(file.read(), np.uint8), cv2.IMREAD_COLOR)
-#             # resize the images to 1024x1024
-#             picture_height, picture_width, _ = picture_image.shape
-#             aspect_ratio = picture_width / picture_height
-#             new_picture_width = 1024
-#             new_picture_height = int(new_picture_width / aspect_ratio)
-#             resized_picure_image = cv2.resize(picture_image, (new_picture_width, new_picture_height))
-#
-#             frame_height, frame_width, _ = img.shape
-#             aspect_ratio = frame_width / frame_height
-#             new_frame_width = 1024
-#             new_frame_height = int(new_frame_width / aspect_ratio)
-#             resized_image = cv2.resize(img, (new_frame_width, new_frame_height))
-#             # combine the 2 videos one up and one down
-#             combined_images = np.concatenate((resized_picure_image, resized_image), axis=0)
-#             flipped_combined_images = cv2.flip(combined_images, 1)
-#             # made a frame 1024 x 2048 and resize pasted images to fit maintaining the aspect ratio
-#             temp_height, _, _ = flipped_combined_images.shape
-#             combined_aspect_ratio = 1024 / temp_height
-#             if temp_height > 2048:
-#                 new_combined_width = int(1024 / combined_aspect_ratio)
-#                 new_combined_height = 2048
-#             else:
-#                 new_combined_width = 1024
-#                 new_combined_height = int(2048 * combined_aspect_ratio)
-#             resized_combined_images = cv2.resize(flipped_combined_images, (new_combined_width, new_combined_height))
-#             # create a black frame 1024 x 2048 and paste the resized images on it in the center
-#             black_frame = np.zeros((2048, 1024, 3), np.uint8)
-#             black_frame[1024 - new_combined_height // 2:new_combined_height // 2 + 1024, 512 - new_combined_width // 2:new_combined_width // 2 + 512] = resized_combined_images
-#
-#             # write the frame to the video
-#             out.write(black_frame)
-#
-#     out.release()
-#
-#     new_video = Video(path=video_path, user_id=user_id)
-#     db.session.add(new_video)
-#     db.session.commit()
-#     print('////////////////////////////////////////////////////', new_video.as_dict())
-#     return jsonify(new_video.as_dict())
 
 
 @app.route("/videos/<id>", methods=["GET"])
