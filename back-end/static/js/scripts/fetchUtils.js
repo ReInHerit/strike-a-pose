@@ -71,20 +71,20 @@ export const getLevels = () =>
         })
     );
 
-export const setRoomAttr = (id, level, n) =>
+export const setRoomAttr = (dataToSend) =>
     fetchJson(
         fetch(`${Config.SERVER_URL}room`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({id: id, level: level, n: n}),
+            body: JSON.stringify(dataToSend),
         })
     );
 
-export const getRoom = (id) =>
+export const getRoom = (id, user_id) =>
     fetchJson(
-        fetch(`${Config.SERVER_URL}join/${id}`, {
+        fetch(`${Config.SERVER_URL}join/${id}?user_id=${user_id}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",

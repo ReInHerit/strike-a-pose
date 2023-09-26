@@ -4,10 +4,11 @@ import { stringTimeToSeconds } from "./scripts/utils.js";
 
 let socket = undefined;
 let roomId;
-
+let user_id
 $(async () => {
     const queryParams = new URLSearchParams(window.location.search);
     const player = queryParams.get("player");
+    user_id = queryParams.get("user_id");
     const endImg = document.getElementById("victoryImg");
     const endText = document.getElementById("final_title");
 
@@ -30,28 +31,78 @@ $(async () => {
     }
 
     const video = await getVideo(videoId);
+    // Add an event listener for the form submission
+    $("#email_form").submit(async (event) => {
+        event.preventDefault(); // Prevent the default form submission behavior
 
-    const downloadVideoEl = $("button#video_download");
-    downloadVideoEl.click(() => {
-        fetch(`${Config.SERVER_URL}${video.path}`)
-              .then((response) => response.blob())
-              .then((blob) => {
-                  const blobURL = URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = blobURL;
-                  a.style = "display: none";
-                  a.download = "strike_a_pose.mp4";
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-              });
+        // Get the user's email input
+        const userEmail = $("#user_email").val();
+
+        // Check if the email is valid (you can add more robust email validation)
+        if (!isValidEmail(userEmail)) {
+            alert("Please enter a valid email address.");
+            return;
+        }
+
+        // Fetch the video and send it as an attachment
+        try {
+            const videoBlob = await fetch(`${Config.SERVER_URL}${video.path}`).then((response) => response.blob());
+            console.log(videoBlob)
+            // Send the video as an attachment using a server-side script
+            const formData = new FormData();
+            formData.append("email", userEmail);
+            formData.append("video", videoBlob);
+            fetch("/send-video", {
+            method: "POST",
+            body: formData,
+        })
+        .then((response) => {
+            if (response.ok) {
+                return response.text(); // or response.json() if the server sends JSON
+            } else {
+                throw new Error("Error sending the video.");
+            }
+        })
+        .then((data) => {
+            alert("Video sent successfully!");
+        })
+        .catch((error) => {
+            alert(error.message);
+            console.error(error);
+        });
+        } catch (error) {
+            console.error(error);
+        }
     });
+
+    // const downloadVideoEl = $("button#video_download");
+    // downloadVideoEl.click(() => {
+    //     fetch(`${Config.SERVER_URL}${video.path}`)
+    //           .then((response) => response.blob())
+    //           .then((blob) => {
+    //               const blobURL = URL.createObjectURL(blob);
+    //               const a = document.createElement("a");
+    //               a.href = blobURL;
+    //               a.style = "display: none";
+    //               a.download = "strike_a_pose.mp4";
+    //               document.body.appendChild(a);
+    //               a.click();
+    //               document.body.removeChild(a);
+    //           });
+    // });
 
     $("#show_scores_button").on("click", () => {
         $("#tableG1").show();
         $("#tableG2").show();
     });
 
+    function isValidEmail(email) {
+    // Regular expression pattern for a valid email address
+        const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+
+        // Test the email against the pattern
+        return emailPattern.test(email);
+    }
     function handleWinnerWithdrawn() {
         endImg.src = "/static/assets/end/winner.gif";
         endText.innerHTML = "Your opponent withdrew, you win!";
@@ -62,7 +113,7 @@ $(async () => {
     function handleOpponentWithdrawn() {
         endImg.src = "/static/assets/end/loadWinner.gif";
         endText.innerHTML = "Waiting for the opponent...";
-        socket.emit("join", roomId, null);
+        socket.emit("join", roomId, null, user_id);
         socket.emit("acquireResults", roomId);
         listenForRoomMessage();
         listenForUserRetired();
@@ -71,7 +122,7 @@ $(async () => {
     }
 
     function hideVideoElements() {
-        document.getElementById("testo_end").style.display = "none";
+        document.getElementById("end-text").style.display = "none";
         document.getElementById("video_download").style.display = "none";
     }
 

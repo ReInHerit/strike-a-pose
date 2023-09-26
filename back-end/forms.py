@@ -27,9 +27,20 @@ class CreateRoomForm(FlaskForm):
         (2, "Two"),
         (3, "Three")
     ]
+    choices_level = [
+        (1,"Half Bust"),
+        (2, "Full Body"),
+        (3, "All")
+    ]
+    choices_clients = [
+        (1, "Solo"),
+        (2, "Versus")
+    ]
 
-    n_round = SelectField("Choose number of rounds", choices=choices_n_round, validators=[DataRequired("Round number is required")])
-    n_pose = SelectField("Choose number of poses", choices=choices_n_pose, validators=[DataRequired("Pose number is required")])
+    n_round = SelectField("Choose", choices=choices_n_round, validators=[DataRequired("Round number is required")])
+    n_pose = SelectField("Choose", choices=choices_n_pose, validators=[DataRequired("Pose number is required")])
+    levels = SelectField("Choose", choices=choices_level, validators=[DataRequired("Level is required")])
+    clients = SelectField("Choose", choices=choices_clients, validators=[DataRequired("Client number is required")])
     submit = SubmitField("CREATE ROOM")
 
 class JoinRoomForm(FlaskForm):

@@ -17,11 +17,17 @@
     <div class="div_end">
       <h1 id="final_title"></h1>
       <img class="img-fluid" id="victoryImg" />
-      <p class="mb-4" id="testo_end">
-        <!--Hai eseguito ogni posa alla perfezione! <br /> -->
-        Now you can download your video and go back to play a new game
+      <p class="mb-4" id="end-text">
+        Now you can send your video to your email and go back to play a new game
       </p>
-      <button id="video_download" class="btn btn-primary btn-block">DOWNLOAD VIDEO</button>
+{#      <button id="video_download" class="btn btn-primary btn-block">DOWNLOAD VIDEO</button>#}
+      <form id="email_form" class="mb-4">
+        <div class="form-group" id="email-form">
+{#            <label for="user_email">Enter your email:</label>#}
+            <input type="email" class="form-control" id="user_email" placeholder="Enter your email" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">SEND VIDEO TO EMAIL</button>
+      </form>
       <button id="show_scores_button" class="btn btn-primary btn-block" style="display: none">SHOW RESULTS</button>
       <a href="/logout" class="btn btn-secondary btn-block"> BACK </a>
 

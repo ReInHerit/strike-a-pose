@@ -1,7 +1,7 @@
 $(() => {
     const checkbox = $("#toggle");
     const input_checkbox = $("#title-row");
-    const containerHost = $("#container-host");
+    const containerHost = $("#container-rooms");
     const containerJoin = $("#container-join");
 
     const hostButton = $("#host");
@@ -40,7 +40,7 @@ $(() => {
     const randomId = localStorage.getItem("userId");
 
     // Set the user's random ID in the HTML element
-    $("#user-random-id").text(randomId);
+    // $("#user-random-id").text(randomId);
 
     checkbox.on("click", () => {
         if (containerHost.is(":visible") && containerJoin.is(":visible")) {

@@ -1,5 +1,11 @@
+from dotenv import load_dotenv
+import os
+# Create a Config object with the relative path to the .env file
+# config = Config('../../.env')
+load_dotenv()
+
 class Config(object):
-    DEBUG = False
+    DEBUG = True
     TESTING = False
     CSRF_ENABLED = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -10,7 +16,7 @@ class Config(object):
 
 
 class ProductionConfig(Config):
-    SECRET_KEY = "8c3f78bc007987a0fecacade5f06199d891da49fe355c7e1f4542c81d5cc95d7"
+    SECRET_KEY = os.getenv("SECRET_KEY")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
@@ -19,3 +25,4 @@ class DevelopmentConfig(Config):
     DEVELOPMENT = True
     SECRET_KEY = "thisisasecretkey"
     SQLALCHEMY_TRACK_MODIFICATIONS = True
+    FLASK_DEBUG = 1

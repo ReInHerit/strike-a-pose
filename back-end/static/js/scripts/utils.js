@@ -234,9 +234,9 @@ const updateScoreAndCanvas = (computedDistancePercentage, camCanvas, video, filt
         $("#camCanvas").first().css("transform", "scale(" + 1 / aspRatio + ",1)");
     }
 
-    if (Config.DEBUG) {
-        camCanvas.drawSkeleton({ keypoints: filteredVideoKPs });
-    }
+    // if (Config.DEBUG) {
+    //     camCanvas.drawSkeleton({ keypoints: filteredVideoKPs });
+    // }
 };
 
 const initGame = async (levelId, video, camCanvas, imgCanvas) => {
@@ -252,7 +252,7 @@ const initGame = async (levelId, video, camCanvas, imgCanvas) => {
         const id = idRandom[round];
         const userId = localStorage.getItem("userId");
         const { imageKPNames, distanceFromImg } = await pictureLoad(id);
-
+        console.log('userId', userId);
         const imgQueue = queueGenerator(Config.VIDEO_SECONDS * Config.FRAME_RATE);
 
         const gameLoop = setInterval(async () => {
@@ -317,13 +317,21 @@ const initGame = async (levelId, video, camCanvas, imgCanvas) => {
     return nextRound();
 };
 
-const initGame2 = async (socket, roomId, picturesArray, nPose, nRound, video, camCanvas, imgCanvas) => {
+const initGame2 = async (socket, roomId, picturesArray, nPose, nRound, video, camCanvas, imgCanvas, user_id) => {
     let first = true;
     let round = 0;
     let pose = 0;
     let userVideoList = [];
     let roundResults = {time: 0, pose: 0};
     let gameResults = [];
+    let isPlayer1Turn = true; // Initially, it's Player 1's turn
+
+    // Function to switch turns between players
+    const switchTurn = () => {
+        isPlayer1Turn = !isPlayer1Turn;
+        startGameForPlayer(); // Start the game for the next player
+    };
+
 
     const detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet);
     const pictureLoad = await createPictureLoader(imgCanvas);
@@ -385,7 +393,7 @@ const initGame2 = async (socket, roomId, picturesArray, nPose, nRound, video, ca
                             formData.append(`frames_${id}[]`, frame, `frame_${id}_${j}.jpg`);
                         });
                     });
-
+                    formData.append("user_id", user_id);
                     // create the message box element
                     const messageBox = createMessageBox()
 
@@ -397,12 +405,12 @@ const initGame2 = async (socket, roomId, picturesArray, nPose, nRound, video, ca
                             // remove the message box from the page after the video is posted
                             messageBox.remove();
                             console.log("Results received");
-                            socket.emit("leave", roomId, false);
-
-                            socket.on("leave_message", (msg) => {
+                            socket.emit("leave", roomId, false, user_id);
+                            console.log("leave message sent")
+                            socket.on("room_leave_message", (msg) => {
                                 console.log("message from room: " + msg);
                                 localStorage.setItem("retired", "false");
-                                location.href = `/end?id=${video.id}&player=${player}`;
+                                location.href = `/end?id=${video.id}&player=${player}&user_id=${user_id}`;
                             });
                         });
                     } catch (e) {
@@ -410,7 +418,7 @@ const initGame2 = async (socket, roomId, picturesArray, nPose, nRound, video, ca
                         messageBox.remove();
                         console.error(e);
                         localStorage.setItem("retired", "false");
-                        location.href = `/end?id=${video.id}&player=P1`;
+                        location.href = `/end?id=${video.id}&player=P1&user_id=${user_id}`;
                     }
                 } else {
                     round++;

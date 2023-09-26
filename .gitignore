@@ -6,3 +6,4 @@ back-end/database.db
 *.mp4
 /.idea/*
 /node_modules/
+/back-end/.env

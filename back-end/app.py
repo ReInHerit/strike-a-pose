@@ -8,8 +8,8 @@ import socket
 
 app = Flask(__name__)
 host_name = socket.getfqdn()
-socketio = SocketIO(app, cors_allowed_origins="https://" + host_name)
-cors = CORS(app, resources={r"/*": {"origins": "https://" + host_name}})
+socketio = SocketIO(app, cors_allowed_origins=["https://" + host_name, "https://strikeapose.it"])  # Add your origin here
+cors = CORS(app, resources={r"/*": {"origins": ["https://" + host_name, "https://strikeapose.it"]}})  # Add your origin here
 print(f"CORS: https://{host_name}")
 
 app.config.from_object("config.DevelopmentConfig")
