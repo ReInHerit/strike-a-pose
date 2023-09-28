@@ -204,7 +204,18 @@ th:nth-child(7), td:nth-child(7) {
 
     border: none;
 }
+.enabled {
+    pointer-events: auto;
+    opacity: 1;
+    ;
+}
 
+/* CSS class for disabling elements */
+.disabled {
+    pointer-events: none;
+    pointer: default;
+    opacity: 0.5;
+}
 #rooms-title h4 {
     padding: 0.375rem 0.75rem;
     color: white;

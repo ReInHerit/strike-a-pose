@@ -4,14 +4,16 @@ import { Config } from "./scripts/config.js";
 const serverUrl = Config.SERVER_URL;
 const socket = io.connect(serverUrl);
 const waitingScreen = $("#waiting-screen")[0];
-// Define constants for element selectors
-// const checkbox = $("#toggle");
-// const containerHost = $("#container-rooms");
-// const containerJoin = $("#container-join");
-// const roomInput = $("#room-id");
+const players_input = $("#nPlayers_setted");
+const poses_input = $("#nPose_setted")[0];
+const rounds_input = $("#nRound_setted")[0];
+const addRoomBtn = $("#add-room-btn");
+
+// console.log(playersModeValue);
 const uniqueId = $("#user-random-id").text();
 console.log("uniqueId:", waitingScreen, $("#waiting-screen"));
 let isStartingGame = false;
+let gameData = {};
 socket.on("connect", () => {
     console.log("Connected to server");
     socket.emit("user_connected", uniqueId);
@@ -28,6 +30,7 @@ socket.on("update_users", (userIds) => {
 });
 socket.on("disconnect", () => {
     console.log("Disconnected from server");
+    socket.emit("disconnect_user", isStartingGame);
 });
 socket.on("connect_error", (err) => {
     console.log(`connect_error due to ${err.message}`);
@@ -44,8 +47,18 @@ $(document).ready(async function() {
         await fetchRoomsData();
         await updateRoomsList();
     }
-
-    $("#add-room-btn").on("click", function() {
+    players_input.on("change", function() {
+        if (players_input.val() === "2") {
+            rounds_input.classList.add('enabled');
+            rounds_input.classList.remove("disabled");
+            console.log("2 players");
+        } else {
+            rounds_input.classList.add('disabled');
+            rounds_input.classList.remove("enabled");
+            console.log("1 player");
+        }
+    });
+    addRoomBtn.on("click", function() {
         // let room_id;
         const row = $(this).closest("tr");
         const playersMode = row.find("#nPlayers_setted").val();
@@ -349,71 +362,6 @@ $(document).ready(async function() {
         }
     });
 
-    //LOGOUT
-    async function leaveRoom() {
-        if (socket !== undefined) {
-            console.log("in leaveRoom");
-
-            const leavePromises = roomsData
-                .filter(room => room.clients && room.clients.includes(uniqueId))
-                .map(async room => {
-                    console.log("in leaveRoom", room.room_id);
-                    // Emit a "leave" event for each room and await it
-                    await socket.emit("leave_room", {
-                        "room_id": room.room_id,
-                        "user_id": uniqueId
-                    });
-                    console.log("emitted");
-                    // You can also handle the "room_leave_message" event here if needed
-                });
-
-            // Wait for all "leave" events to complete
-            await Promise.all(leavePromises);
-
-            console.log("leaveRoom function executed");
-        }
-    }
-
-
-    window.logout = async function() {
-        if (!isStartingGame) {
-            // await leaveRoom();
-            await leaveRoom();
-            console.log("logouting")
-            window.location = `/logout?user_id=${uniqueId}`;
-        } else {
-            // Display a message or prevent the logout action
-            alert("You cannot log out while starting a game.");
-        }
-    };
-
-    // socket.on("user_leave_room", async (data) => {
-    //     console.log("in leave:", data);
-    //     if (!isStartingGame) {
-    //         console.log("in leave:", data);
-    //         // await fetchRoomsData()
-    //         await updateRoomsList();
-    //     }
-    // });
-
-    window.onbeforeunload = async function(event) {
-        if (isStartingGame) {
-            // Display a message to indicate that the user cannot leave while starting a game
-            event.preventDefault();
-            event.returnValue = "You cannot leave while starting a game.";
-        } else {
-            console.log("in onbeforeunload")
-            // try {
-            //     await leaveRoom(); // Ensure the user leaves the room before logging out
-            // } catch (error) {
-            //     // Handle any errors that may occur during the leaveRoom process
-            //     console.error("Error leaving room:", error);
-            // }
-
-            // Continue with the logout process
-            window.location = `/logout?user_id=${uniqueId}`;
-        }
-    };
 
     function play_solo(button) {
         const row = button.closest("tr");
@@ -437,40 +385,115 @@ $(document).ready(async function() {
 
     socket.on("start_game", (data) => {
         console.log(data);
-        let player1, player2;
+        gameData = game_data(data);
+        const pictures_number = parseInt(gameData["nPose"], 10);
+        let picturesArray = [];
+        for (let i = 1; i <= pictures_number; i++) {
+
+        }
+
+
+        console.log(gameData, gameData["players"]);
+        // gameData["playerId"] = uniqueId;
+        if (uniqueId === gameData["players"][0]) {
+            console.log("player1");
+            gameData["playerId"] = uniqueId;
+            window.location = `/game?mode=versus&gameData=${JSON.stringify(gameData)}&player=1`;
+        } else if (uniqueId === gameData["players"][1]) {
+            gameData["playerId"] = uniqueId;
+            console.log("player2");
+            showWaitingScreen();
+
+        }
+
+
+        console.log("play_versus function executed");
+    });
+    socket.on("start_player2", (data) => {
+        if (gameData["players"][1] === uniqueId) {
+            hideWaitingScreen()
+
+            isStartingGame = true;
+            console.log("Received 'start_player2' signal from server.");
+            window.location = `/game?mode=versus&gameData=${JSON.stringify(gameData)}&player=2`;
+        }
+    });
+    function game_data(data) {
         const room_id = data["room"];
         const room = roomsData.find(room => room.room_id === parseInt(room_id));
         console.log(room);
         const players = room.clients;
-        [player1, player2] = players;
+        // const [player1, player2] = players;
         console.log("start_game event received", room_id, players);
-        // for (const room of roomsData) {
-        //     console.log(room)
-        //     if (room.room_id === parseInt(room_id)) {
-        //         console.log("in room", room.room_id)
         const nPose = room.n_pose;
         const nRound = room.n_round;
         const playersMode = room.players_mode;
         const creator = room.creator;
         const level = room.level;
         console.log("in play_versus", room_id, nPose, nRound);
-        if (uniqueId === player1) {
-            const gameData = {
-                "nPose": nPose.toString(),
-                "nRound": nRound.toString(),
-                "level": level,
-                "playerId": uniqueId,
-                "roomId": room_id,
-                "creator": creator
-            };
-            window.location = `/game?mode=versus&gameData=${JSON.stringify(gameData)}`;
-        } else if (uniqueId === player2) {
-            showWaitingScreen();
+        const gameData = {
+            "nPose": nPose.toString(),
+            "nRound": nRound.toString(),
+            "players": players,
+            "level": level,
+            "roomId": room_id,
+            "creator": creator
+        };
+        return gameData
+    }
+    //LOGOUT
+    async function leaveRoom() {
+        if (socket !== undefined) {
+            console.log("in leaveRoom");
+
+            const leavePromises = roomsData
+                  .filter(room => room.clients && room.clients.includes(uniqueId))
+                  .map(async room => {
+                      console.log("in leaveRoom", room.room_id);
+                      // Emit a "leave" event for each room and await it
+                      await socket.emit("leave_room", {
+                          "room_id": room.room_id,
+                          "user_id": uniqueId
+                      });
+                      console.log("emitted");
+                  });
+
+            // Wait for all "leave" events to complete
+            await Promise.all(leavePromises);
+
+            console.log("leaveRoom function executed");
         }
+    }
 
 
-        console.log("play_versus function executed");
-    });
+    window.logout = async function() {
+        socket.emit("disconnect_user", isStartingGame);
+
+        if (!isStartingGame) {
+            // await leaveRoom();
+            // await leaveRoom();
+            console.log("logouting");
+            window.location = `/logout?user_id=${uniqueId}`;
+        } else {
+            // Display a message or prevent the logout action
+            alert("You cannot log out while starting a game.");
+        }
+    };
+
+    window.onbeforeunload = async function(event) {
+        socket.emit("disconnect_user", isStartingGame);
+
+        if (isStartingGame) {
+            // Display a message to indicate that the user cannot leave while starting a game
+            // event.preventDefault();
+            event.returnValue = "You cannot leave while starting a game.";
+        } else {
+            console.log("in onbeforeunload");
+            // socket.emit('disconnect_user', { userId: uniqueId });
+            // Continue with the logout process
+            window.location = `/logout?user_id=${uniqueId}`;
+        }
+    };
 });
 
 function showWaitingScreen() {
@@ -482,123 +505,3 @@ function hideWaitingScreen() {
     waitingScreen.style.display = "none";
 }
 
-// window.play = function(attrs) {
-//     const level = attrs[1];
-//     const n = attrs[2];
-//     const currentRoomId = roomInput.val(); // Get the current value of the input field
-//
-//     if (!checkbox.prop("checked")) {
-//         console.log("checkbox not checked");
-//         roomId = null;
-//         roomInput.val("Room ID: "); // Reset the input value to "Room ID: "
-//     }
-//
-//     if (currentRoomId !== "Room ID: ") {
-//         console.log("currentRoomId !== \"Room ID: \"", attrs);
-//         host(attrs);
-//     } else {
-//         roomInput.val("Room ID: ");
-//         window.location = `/game?id=${level}&mode=solo`;
-//     }
-// };
-//
-// async function host(attrs) {
-//     roomId = $("#room-id").val().replace(/\D/g, "");
-//     // roomId = attrs[0];
-//     const level = attrs[1];
-//     const n = attrs[2];
-//     console.log(roomId, level, n, uniqueId);
-//
-//     const dataToSend = { id: roomId, level: level, n: n };  // , userId: userId
-//     const response = await setRoomAttr(dataToSend);
-//     console.log(response);
-//
-//     if (nPose > n) {
-//         alert("The number of poses selected must be lower than the number of artworks in the mode you have chosen");
-//         return;
-//     }
-//
-//     $("#fade").addClass("fade-me");
-//     $("#fade").show();
-//
-//     socket.on("status", (status) => {
-//         console.log("status: " + status.data, "roomId:", roomId, "level:", level, "uniqueId:", uniqueId);
-//     });
-//
-//     socket.emit("join", roomId, level, uniqueId); // , userId
-//
-//     socket.on("room_message", (msg) => {
-//         console.log("message from room: " + msg);
-//     });
-//
-//     socket.on("message", (msg) => {
-//         console.log("message from server: " + msg);
-//     });
-//
-//     socket.on("disconnect", () => {
-//         console.log("disconnect");
-//     });
-//     socket.emit("play", roomId, level);
-//     console.log("Emitted 'play' event");
-//     socket.on("play", (pictures) => {
-//         console.log("PLAY!");
-//         $("#fade").hide();
-//         localStorage.setItem("picturesArray", JSON.stringify(pictures));
-//         play_versus(nPose, nRound);
-//     });
-//
-// }
-//
-// window.playButtons = function(attr) {
-//     $("button.play").attr("disabled", attr);
-// };
-//
-// window.join = async function() {
-//     roomId = $("#room-join-id").val();
-//
-//     const errorJoin = $("#error");
-//     console.log("ROOMID: ", roomId);
-//     try {
-//         const resp = await getRoom(roomId, uniqueId);
-//         console.log("resp", resp);
-//
-//         // const serverUrl = Config.SERVER_URL;
-//         // socket = io.connect(serverUrl);
-//
-//         socket.on("status", (status) => {
-//             console.log("status: " + status.data);
-//         });
-//
-//         socket.emit("join", roomId, resp.level, uniqueId); //
-//
-//         socket.on("room_message", (msg) => {
-//             console.log("message from room: " + msg);
-//         });
-//
-//         socket.on("error", (msg) => {
-//             errorJoin.text(msg);
-//         });
-//
-//         socket.on("errorRoom", (msg) => {
-//             errorJoin.text(msg);
-//         });
-//
-//         socket.on("message", (msg) => {
-//             console.log("message from server: " + msg);
-//         });
-//
-//         socket.on("play", (pictures) => {
-//             localStorage.setItem("picturesArray", JSON.stringify(pictures));
-//             play_versus(resp.n_pose, resp.n_round);
-//         });
-//
-//     } catch (error) {
-//         errorJoin.text(error);
-//     }
-// };
-
-
-// function delay(ms) {
-//     var start = +new Date;
-//     while ((+new Date - start) < ms) ;
-// }

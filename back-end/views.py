@@ -20,7 +20,31 @@ from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 connected_clients = {}
 players_ready_to_start = {}
+room_states = {}
 rooms = []
+# Lock for thread-safe access to the dictionary
+clients_lock = threading.Lock()
+
+# Function to add a connected client
+def add_connected_client(socket_id, user_id):
+    with clients_lock:
+        connected_clients[socket_id] = user_id
+
+# Function to remove a disconnected client
+def remove_disconnected_client(socket_id):
+    with clients_lock:
+        if socket_id in connected_clients:
+            del connected_clients[socket_id]
+
+# Function to get the user ID associated with a socket ID
+def get_user_id(socket_id):
+    with clients_lock:
+        return connected_clients.get(socket_id)
+
+# Function to check if a user is connected
+def is_user_connected(user_id):
+    with clients_lock:
+        return user_id in connected_clients.values()
 
 @app.route("/", methods=["GET"])
 def index():
@@ -151,23 +175,24 @@ def logout():
     user_id = request.args.get("user_id")
     print('/////////LOGOUT///////////', user_id, '//////////////',len(rooms),'//////////////////////////////////////////////')
     print(rooms)
-    for room in rooms:
-        print('**************', room.to_string(), '**************', user_id)
-        print(len(rooms))
-        if user_id in room.clients:
-
-            if room.players_mode == "2":
-                print('************** VERSUS ROOM **************')
-
-                remove_user_from_room(room, user_id)
-            elif room.players_mode == "1":
-                print('************** SOLO ROOM **************')
-                # if user_id == room.creator:
-                len(rooms)
-                remove_user_from_room(room, user_id)
-                len(rooms)
-
-    session["end"] = True
+    check_users()
+    # for room in rooms:
+    #     print('**************', room.to_string(), '**************', user_id)
+    #     print(len(rooms))
+    #     if user_id in room.clients:
+    #
+    #         if room.players_mode == "2":
+    #             print('************** VERSUS ROOM **************')
+    #
+    #             remove_user_from_room(room, user_id)
+    #         elif room.players_mode == "1":
+    #             print('************** SOLO ROOM **************')
+    #             # if user_id == room.creator:
+    #             len(rooms)
+    #             remove_user_from_room(room, user_id)
+    #             len(rooms)
+    #
+    # session["end"] = True
 
     socketio.emit("update_rooms", user_id)  # Notify all clients
     return redirect(url_for("index"))
@@ -215,6 +240,7 @@ def get_rooms_data():
     return jsonify({"rooms": rooms_data})
 @app.route("/game", methods=["GET"])
 def game():
+    print('/////////GAME///////////', '////////////////////////////////////////////////////////////')
     session["end"] = True
     try:
         if session.pop("game"):
@@ -401,39 +427,48 @@ def end():
     return redirect(url_for("start"))
 
 def check_users_in_rooms():
+
     while True:
-        rooms_to_remove = []
-        print('////////////////////////////CHECK USERS IN ROOMS///////',len(rooms),'//////////////////////////')
-        for room in rooms:
-            room_id = room.id
-            clients = room.clients
-            creator = room.creator
-            disconnected_clients = []
+        check_users()
+        time.sleep(20)  # Check every 60 seconds
+def check_users():
+    print(connected_clients)
+    rooms_to_remove = []
+    # print('///////////////////////////CHECK USERS IN ROOMS///////', len(rooms), '//////////////////////////')
+    for room in rooms:
+        room_id = room.id
+        clients = room.clients
+        creator = room.creator
+        disconnected_clients = []
 
-            # Check if the creator is still connected
-            if creator not in connected_clients.values():
-                disconnected_clients.append(creator)
+        # Check if the creator is still connected
+        if creator not in connected_clients.values():
+            disconnected_clients.append(creator)
+            print('**************CREATOR DISCONNECTED**************', creator, '**************ROOM ID**************',
+                  room_id)
 
-            # Check if clients are still connected
-            for client in clients:
-                if client not in connected_clients.values():
-                    disconnected_clients.append(client)
+        # Check if clients are still connected
+        for client in clients:
+            if client not in connected_clients.values():
+                print('**************CLIENT DISCONNECTED**************', client, '**************ROOM ID**************',
+                      room_id)
+                disconnected_clients.append(client)
 
-            unique_list = list(set(disconnected_clients))
-            # Remove disconnected users from the room
-            for user in unique_list:
+        unique_list = list(set(disconnected_clients))
+        print('**************DISCONNECTED CLIENTS**************', unique_list, '**************ROOM ID**************',
+              room_id)
+        # Remove disconnected users from the room
+        for user in unique_list:
+            if user in room.clients:
                 room.clients.remove(user)
 
-            # If all users are disconnected, delete the room
-            if not room.clients:
-                rooms_to_remove.append(room)
-        clean_rooms_to_remove = list(set(rooms_to_remove))
-        for room_to_remove in clean_rooms_to_remove:
-            rooms.remove(room_to_remove)
-        socketio.emit("update_rooms")  # Notify all clients
-        time.sleep(20)  # Check every 60 seconds
-
-
+        # If all users are disconnected, delete the room
+        if not room.clients:
+            rooms_to_remove.append(room)
+    clean_rooms_to_remove = list(set(rooms_to_remove))
+    for room_to_remove in clean_rooms_to_remove:
+        rooms.remove(room_to_remove)
+    socketio.emit("update_rooms")  # Notify all clients
 # Start the user-checking thread
 user_checking_thread = threading.Thread(target=check_users_in_rooms)
 user_checking_thread.daemon = True
@@ -446,16 +481,19 @@ def connect():
 
 @socketio.on('user_connected')
 def handle_user_connected(uniqueId):
-    user_id = request.sid  # Use the unique socket ID as the user ID
-    connected_clients[user_id] = uniqueId
+    user_id = uniqueId  # Use the unique socket ID as the user ID
+    add_connected_client(request.sid, user_id)
+    print('Client connected: ', user_id, request.sid, '///////////////////////////////')
     emit('update_users', list(connected_clients.values()))
 
 @socketio.on('disconnect')
 def handle_disconnect():
-    user_id = request.sid
-    if user_id in connected_clients:
-        del connected_clients[user_id]
-        emit('update_users', list(connected_clients.values()))
+    print('Client disconnected ************************/////////////////')
+    # user_id = get_user_id(request.sid)
+    #
+    # if user_id is not None and not is_in_game:
+    #     remove_disconnected_client(request.sid)
+    #     print(f'Client disconnected: {user_id}')
 # @socketio.on("join")
 # def on_join(room_id, level, user_id):
 #     my_room = next((x for x in rooms if x.id == int(room_id)), None)
@@ -491,6 +529,18 @@ def handle_disconnect():
 # def player_joined(data):
 #     # Broadcast the player joined event to all clients
 #     emit("player_joined", data, broadcast=True)
+@socketio.on('disconnect_user')
+def handle_disconnect(isStartingGame):
+    print("is starting game: ", isStartingGame, "///////////////////////////////")
+    user_id = get_user_id(request.sid)
+    print(user_id, '///////////////////////////////')
+    if user_id is not None and not isStartingGame:
+        remove_disconnected_client(request.sid)
+        print(f'Client disconnected: {user_id}')
+        print(connected_clients)
+        emit('update_users', list(connected_clients.values()))
+
+
 @socketio.on('leave_room')
 def handle_leave_room(data):
     room_id = data.get('room_id')  # Get the room ID from the data object
@@ -555,25 +605,44 @@ def handle_leave_room(data):
 def handle_start_game_request(data):
     room_id = data["room_id"]
     user_id = data["user_id"]
-    print("++++++++++++++++++++++++++++++++++++++++++++++", room_id, user_id)
+    print("Room ID:", room_id)
+    print("User ID:", user_id)
+
     # Check if the room exists and initialize the players_ready_to_start list if needed
-    if room_id not in players_ready_to_start:
-        players_ready_to_start[room_id] = []
+    if room_id not in room_states:
+        room_states[room_id] = {
+            'player1': None,
+            'player2_ready': False
+        }
 
-    # Add the user's ID to the list of players ready to start in the room
-    if user_id not in players_ready_to_start[room_id]:
-        players_ready_to_start[room_id].append(user_id)
-    print("++++++++++++++++++++++++++++++++++++++++++++++", players_ready_to_start)
-    # Check if both players are ready to start
-    if room_id in players_ready_to_start and len(players_ready_to_start[room_id]) == 2:
-        # Both players are ready, emit a "start_game" event to both clients in the room
-        socketio.emit("start_game", {"room": room_id})
-        print("Emitting 'start_game' to room", room_id)
+    # Assign the first player to join as player1
+    if room_states[room_id]['player1'] is None:
+        room_states[room_id]['player1'] = user_id
+        print("Player 1:", user_id)
+    else:
+        # Assign the second player to join as player2
+        room_states[room_id]['player2_ready'] = True
+        print("Player 2:", user_id)
+
+        # Check if both players are ready to start
+        if room_states[room_id]['player1'] is not None and room_states[room_id]['player2_ready']:
+            # Both players are ready, emit a "start_game" event to both clients in the room
+            socketio.emit("start_game", {"room": room_id})
 
 
+@socketio.on("start_game_player2")
+def handle_start_game_player2(room_id):
+    # Perform any necessary actions when player 2 is ready to start the game
+    # For example, you can emit a message or perform other logic here
+    print("Received 'start_game_player2' from player 1 in room:", room_id)
+
+    # If needed, you can emit a message to player 1 or perform other actions
+    socketio.emit("start_player2", {"room": room_id})
 @socketio.on("sendResults")
 def on_sendResults(room_id, results):
+    print(rooms)
     my_room = next((x for x in rooms if x.id == int(room_id)), None)
+    print("***********MY ROOM in results***********", my_room.id, my_room.results)
     if my_room.results[0] is None:
         my_room.results[0] = results
         emit("results_received", "1")

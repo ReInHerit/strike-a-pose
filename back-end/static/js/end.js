@@ -14,7 +14,7 @@ $(async () => {
 
     const serverUrl = Config.SERVER_URL // `${window.location.protocol}//${window.location.hostname}`;
     socket = io.connect(serverUrl);
-    roomId = localStorage.getItem("roomId");
+    roomId = queryParams.get("roomId");
 
     if (player.normalize() === "solo".normalize()) {
         endImg.src = "/static/assets/end/winner.gif";
@@ -75,21 +75,6 @@ $(async () => {
         }
     });
 
-    // const downloadVideoEl = $("button#video_download");
-    // downloadVideoEl.click(() => {
-    //     fetch(`${Config.SERVER_URL}${video.path}`)
-    //           .then((response) => response.blob())
-    //           .then((blob) => {
-    //               const blobURL = URL.createObjectURL(blob);
-    //               const a = document.createElement("a");
-    //               a.href = blobURL;
-    //               a.style = "display: none";
-    //               a.download = "strike_a_pose.mp4";
-    //               document.body.appendChild(a);
-    //               a.click();
-    //               document.body.removeChild(a);
-    //           });
-    // });
 
     $("#show_scores_button").on("click", () => {
         $("#tableG1").show();
@@ -113,7 +98,10 @@ $(async () => {
     function handleOpponentWithdrawn() {
         endImg.src = "/static/assets/end/loadWinner.gif";
         endText.innerHTML = "Waiting for the opponent...";
-        socket.emit("join", roomId, null, user_id);
+        console.log(roomId)
+        socket.emit("start_game_player2", roomId);
+
+        // socket.emit("join", roomId, null, user_id);
         socket.emit("acquireResults", roomId);
         listenForRoomMessage();
         listenForUserRetired();

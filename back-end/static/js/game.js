@@ -52,12 +52,14 @@ async function initGameIfNeeded(queryParams, gameMode, video, camCanvas, imgCanv
         const picturesArray = JSON.parse(localStorage.getItem("picturesArray"));
         const serverUrl = Config.SERVER_URL; // `${window.location.protocol}//${window.location.hostname}`;
         let socket = io.connect(serverUrl);
-        const game_data = queryParams.get("gameData");
+        const game_data = JSON.parse(queryParams.get("gameData"));
+        const player = queryParams.get("player");
         console.log(game_data);
-        roomId = game_data["room_id"];
-        user_id = game_data["user_id"];
-        const nPose = game_data["nPose"];
-        const nRound = game_data["nRound"];
+        roomId = game_data["roomId"];
+        user_id = game_data["playerId"];
+        const nPose = parseInt(game_data["nPose"], 10);
+        const nRound = parseInt(game_data["nRound"], 10);
+
         //queryParams.get("gameData") localStorage.getItem("roomId");
         socket.emit("join", roomId, null, user_id);
 
@@ -74,9 +76,9 @@ async function initGameIfNeeded(queryParams, gameMode, video, camCanvas, imgCanv
                 location.href = `/end?id=No&player=winner&user_id=${user_id}`;
             });
         });
-
+        console.log(nPose, nRound, user_id, roomId);
         document.getElementById("timer").style.display = "flex";
-        await initGame2(socket, roomId, picturesArray, nPose, nRound, video, camCanvas, imgCanvas);
+        await initGame2(socket, roomId, picturesArray, nPose, nRound, video, camCanvas, imgCanvas, user_id, player);
     }
 };
 

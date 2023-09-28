@@ -8,6 +8,6 @@ export class Config {
   static VIDEO_SECONDS = 3;
   static MATCH_LEVEL = 0.7;
   static DEBUG = true;
-  static TIME_LIMIT = "00:30:00";
+  static TIME_LIMIT = "00:05:00";
   static MAX_PICTURES_SOLO = 5;
 }

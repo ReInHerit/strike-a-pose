@@ -317,27 +317,22 @@ const initGame = async (levelId, video, camCanvas, imgCanvas) => {
     return nextRound();
 };
 
-const initGame2 = async (socket, roomId, picturesArray, nPose, nRound, video, camCanvas, imgCanvas, user_id) => {
-    let first = true;
+const initGame2 = async (socket, roomId, picturesArray, nPose, nRound, video, camCanvas, imgCanvas, user_id, player) => {
+    console.log("initGame2", roomId, picturesArray, nPose, nRound, video, camCanvas, imgCanvas, user_id, player)
+    let first;
+    player === 1 ? first = true : first = false;
+
     let round = 0;
     let pose = 0;
     let userVideoList = [];
     let roundResults = {time: 0, pose: 0};
     let gameResults = [];
-    let isPlayer1Turn = true; // Initially, it's Player 1's turn
-
-    // Function to switch turns between players
-    const switchTurn = () => {
-        isPlayer1Turn = !isPlayer1Turn;
-        startGameForPlayer(); // Start the game for the next player
-    };
-
 
     const detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet);
     const pictureLoad = await createPictureLoader(imgCanvas);
 
     alert("Round " + (round + 1) + " begins!");
-
+    console.log(round)
     const nextPose = async () => {
         const id = picturesArray[pose];
 
@@ -401,17 +396,20 @@ const initGame2 = async (socket, roomId, picturesArray, nPose, nRound, video, ca
                         const video = await postVideo(formData);
                         socket.emit("sendResults", roomId, gameResults);
 
-                        socket.on("results_received", (player) => {
+                        socket.on("results_received", async (player) => {
                             // remove the message box from the page after the video is posted
                             messageBox.remove();
-                            console.log("Results received");
-                            socket.emit("leave", roomId, false, user_id);
-                            console.log("leave message sent")
-                            socket.on("room_leave_message", (msg) => {
-                                console.log("message from room: " + msg);
-                                localStorage.setItem("retired", "false");
-                                location.href = `/end?id=${video.id}&player=${player}&user_id=${user_id}`;
-                            });
+                            console.log("Results received", roomId);
+                            localStorage.setItem("retired", "false");
+                            // await socket.emit("start_game_player2", roomId)
+                            location.href = `/end?id=${video.id}&player=${player}&user_id=${user_id}&roomId=${roomId}`;
+                            // socket.emit("leave", roomId, false, user_id);
+                            // console.log("leave message sent")
+                            // socket.on("room_leave_message", (msg) => {
+                            //     console.log("message from room: " + msg);
+                            //     localStorage.setItem("retired", "false");
+                            //     location.href = `/end?id=${video.id}&player=${player}&user_id=${user_id}`;
+                            // });
                         });
                     } catch (e) {
                         // remove the message box from the page after the video is posted
