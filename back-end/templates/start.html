@@ -39,7 +39,7 @@
 </div>
 <div id="start">
   <div id="top">
-    <p>User's Random ID: <span id="user-random-id">{{ user_id }}</span></p>
+    <p hidden="true">User's Random ID: <span id="user-random-id">{{ user_id }}</span></p>
     <button type="button" class="btn btn-primary ml-auto" id="logout_btn" onclick="logout()">LOGOUT</button>
   </div>
   <img src="/static/assets/logo.png" class="logo_mini" id="logo_start" />
@@ -60,7 +60,7 @@
                 <thead class="btn-primary">
                 <tr>
                   <th scope="col">#</th>
-                  <th scope="col">room id</th>
+                  <th scope="col">id</th>
                   <th scope="col">clients</th>
                   <th scope="col">poses</th>
                   <th scope="col">rounds</th>
@@ -73,7 +73,7 @@
                 </tbody>
               </table>
               <table id="add_room_row" class="table table-striped table-bordered table-responsive">
-                <caption>Choose poses, rounds and level then click + button to create a new room</caption>
+                <caption>Set up the room preferences then click + button to create a new room.</caption>
                 <tbody>
                 <tr>
                   <td id="add-room-title">ADD ROOM</td>
@@ -98,45 +98,38 @@
                     </div>
                   </td>
                   <td>
-                    <a id="add-room-btn"><i class="fa-solid fa-square-plus" style="color: #FF5733;"></i></a>
+                    <a id="add-room-btn" class="btn"><i class="fa-solid fa-square-plus" style="color: #FF5733;"></i></a>
                   </td>
                 </tr>
                 </tbody>
               </table>
+              <table id="join_room_row" class="table table-striped table-bordered table-responsive">
+                <caption>Insert your friend's room id and click the button to join a room.</caption>
+                <tbody>
+                <tr>
+                  <td id="join-room-title">JOIN ROOM</td>
+                  <td></td>
+                  <td>ROOM ID: </td>
+                  <td>
+                     <input type="text" class="input-group" id="roomid_textInput" name="textInput">
+                    <div id="popup" class="popup"></div>
+                  </td>
+                  <td>
 
+                  </td>
+                  <td>
+                    <a id="join-room-btn" class="btn disabled"><i class="fa-solid fa-right-to-bracket" style="color: #FF5733;"></i></a>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
               <!-- Room list with titles and join buttons will appear here -->
             </div>
           </div>
-          {#            <div class="container" id="container-join">#}
-          {#              <button type="button" class="btn btn-primary btn-block" onclick="playButtons(true)" id="join">JOIN</button>#}
-          {#              <form action="javascript:join()" method="POST" id="form-join">#}
-          {#                {{ form.hidden_tag() }}#}
-          {#                <div class="input-group mt-3 mb-3">#}
-          {#                  {{ join_form.room_id(id="room-join-id", class="form-control", placeholder="Room ID") }}#}
-          {#                  <div class="input-group-append">#}
-          {#                    {{join_form.submit(class="btn btn-primary")}}#}
-          {#                  </div>#}
-          {#                </div>#}
-          {#                <p style="color: red;" id="error"></p>#}
-          {#              </form>#}
-          {#            </div>#}
         </div>
       </div>
     </div>
   </div>
-  {#    {% for level in levels %}#}
-  {#    <div class="card mb-3">#}
-  {#      <div class="card-body">#}
-  {#        <h2 class="card-title">{{ level.name }}</h2>#}
-  {#        <h5 class="card-subtitle mb-2 text-muted">{{ level.as_dict().get('picture_ids')|length }} artworks </h5>#}
-  {#        <p class="card-text">#}
-  {#          {{ level.description }}#}
-  {#        </p>#}
-  {#        <button type="button" class="btn btn-primary btn-block play"#}
-  {#          onclick="play(['{{ room }}','{{ level.id }}','{{ level.as_dict().get('picture_ids')|length }}'])">PLAY</button>#}
-  {#      </div>#}
-  {#    </div>#}
-  {#    {% endfor %}#}
 </div>
 </body>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"

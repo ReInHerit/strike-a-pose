@@ -1,13 +1,14 @@
 import { createPoseCanvas, initGame, initGame2 } from "./scripts/utils.js";
 import { Config } from "./scripts/config.js";
 
-let socket = undefined;
+const serverUrl = Config.SERVER_URL; // `${window.location.protocol}//${window.location.hostname}`;
+let socket = io.connect(serverUrl);
 let roomId;
 let user_id;
 // Variables to keep track of game state
-let isPlayer1Turn = true; // Player 1 starts
-let gameInProgress = false;
-localStorage.setItem("retired", "true");
+// let isPlayer1Turn = true; // Player 1 starts
+// let gameInProgress = false;
+// localStorage.setItem("retired", "true");
 
 $(async () => {
     const video = $("#video").get(0);
@@ -40,18 +41,18 @@ async function initGameIfNeeded(queryParams, gameMode, video, camCanvas, imgCanv
     if (gameMode.normalize() === "solo") {
         const levelId = queryParams.get("id");
         user_id = queryParams.get("playerId");
+        const poses = queryParams.get("nPose")
         document.getElementById("canvas-container-img").id = "canvas-container-imgSolo";
         document.getElementById("canvas-container-cam").id = "canvas-container-camSolo";
         document.getElementById("timer").display = "none !important";
         document.getElementById("score_container").setAttribute("display", "flex");
         document.getElementById("score_container").setAttribute("align-content", "center");
-        initGame(levelId, video, camCanvas, imgCanvas, camContext);
+        initGame(levelId, poses, video, camCanvas, imgCanvas, camContext);
     } else if (gameMode.normalize() === "versus") {
         document.getElementById("canvas-container-img").style.height = "42%";
         document.getElementById("canvas-container-cam").style.height = "46%";
         const picturesArray = JSON.parse(localStorage.getItem("picturesArray"));
-        const serverUrl = Config.SERVER_URL; // `${window.location.protocol}//${window.location.hostname}`;
-        let socket = io.connect(serverUrl);
+
         const game_data = JSON.parse(queryParams.get("gameData"));
         const player = queryParams.get("player");
         console.log(game_data);
@@ -60,22 +61,6 @@ async function initGameIfNeeded(queryParams, gameMode, video, camCanvas, imgCanv
         const nPose = parseInt(game_data["nPose"], 10);
         const nRound = parseInt(game_data["nRound"], 10);
 
-        //queryParams.get("gameData") localStorage.getItem("roomId");
-        socket.emit("join", roomId, null, user_id);
-
-        socket.on("room_message", (msg) => {
-            console.log("message from room: " + msg);
-        });
-
-        socket.on("user_retired", () => {
-            socket.emit("leave", roomId, true, user_id);
-
-            socket.on("room_leave_message", (msg) => {
-                console.log("message from room: " + msg);
-                localStorage.setItem("retired", "false");
-                location.href = `/end?id=No&player=winner&user_id=${user_id}`;
-            });
-        });
         console.log(nPose, nRound, user_id, roomId);
         document.getElementById("timer").style.display = "flex";
         await initGame2(socket, roomId, picturesArray, nPose, nRound, video, camCanvas, imgCanvas, user_id, player);

@@ -234,19 +234,19 @@ const updateScoreAndCanvas = (computedDistancePercentage, camCanvas, video, filt
         $("#camCanvas").first().css("transform", "scale(" + 1 / aspRatio + ",1)");
     }
 
-    // if (Config.DEBUG) {
-    //     camCanvas.drawSkeleton({ keypoints: filteredVideoKPs });
-    // }
+    if (Config.DEBUG) {
+        camCanvas.drawSkeleton({ keypoints: filteredVideoKPs });
+    }
 };
 
-const initGame = async (levelId, video, camCanvas, imgCanvas) => {
+const initGame = async (levelId, poses, video, camCanvas, imgCanvas) => {
     const level = await getLevel(levelId);
     let round = 0;
     const detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet);
     const pictureLoad = await createPictureLoader(imgCanvas);
     let userVideoList = [];
     let idRandom = level.picture_ids.sort(() => Math.random() - 0.5);
-    const nPictures = Math.min(level.picture_ids.length, Config.MAX_PICTURES_SOLO);
+    const nPictures = Math.min(level.picture_ids.length, parseInt(poses));//Config.MAX_PICTURES_SOLO
 
     const nextRound = async () => {
         const id = idRandom[round];
@@ -263,11 +263,12 @@ const initGame = async (levelId, video, camCanvas, imgCanvas) => {
             const filteredVideoKPs = videoKPs.filter((kp) => imageKPNames.includes(kp.name));
 
             const computedDistance = distanceFromImg(filteredVideoKPs);
-            console.log("1 - computedDistance:", computedDistance, "/ Config.MATCH_LEVEL:", Config.MATCH_LEVEL, "* 100");
-            const computedDistancePercentage = Math.min(99, ((1 - computedDistance) / Config.MATCH_LEVEL) * 100).toFixed(0);
+            console.log("1 - computedDistance:", computedDistance, "/ Config.MATCH_LEVEL:", Config.MATCH_LEVEL, "* 100=",Math.min(99, ((1 - computedDistance) / Config.MATCH_LEVEL) * 100).toFixed(0));
+            const computedDistancePercentage = Math.min(100, ((1 - computedDistance) / Config.MATCH_LEVEL) * 100).toFixed(0);
             console.log("computedDistancePercentage", computedDistancePercentage);
             updateScoreAndCanvas(computedDistancePercentage, camCanvas, video, filteredVideoKPs);
-
+            console.log(1 - computedDistance, ">", Config.MATCH_LEVEL)
+            console.log(1.1 - computedDistance, ">", Config.MATCH_LEVEL)
             if (imgQueue.isFull() && 1.1 - computedDistance > Config.MATCH_LEVEL) {
                 clearInterval(gameLoop);
                 console.log("MATCH!");
@@ -319,8 +320,8 @@ const initGame = async (levelId, video, camCanvas, imgCanvas) => {
 
 const initGame2 = async (socket, roomId, picturesArray, nPose, nRound, video, camCanvas, imgCanvas, user_id, player) => {
     console.log("initGame2", roomId, picturesArray, nPose, nRound, video, camCanvas, imgCanvas, user_id, player)
-    let first;
-    player === 1 ? first = true : first = false;
+    let first = true;
+    // player === 1 ? first = true : first = false;
 
     let round = 0;
     let pose = 0;
@@ -399,17 +400,11 @@ const initGame2 = async (socket, roomId, picturesArray, nPose, nRound, video, ca
                         socket.on("results_received", async (player) => {
                             // remove the message box from the page after the video is posted
                             messageBox.remove();
-                            console.log("Results received", roomId);
+                            console.log("Results received", roomId, player, player["player"]);
                             localStorage.setItem("retired", "false");
                             // await socket.emit("start_game_player2", roomId)
-                            location.href = `/end?id=${video.id}&player=${player}&user_id=${user_id}&roomId=${roomId}`;
-                            // socket.emit("leave", roomId, false, user_id);
-                            // console.log("leave message sent")
-                            // socket.on("room_leave_message", (msg) => {
-                            //     console.log("message from room: " + msg);
-                            //     localStorage.setItem("retired", "false");
-                            //     location.href = `/end?id=${video.id}&player=${player}&user_id=${user_id}`;
-                            // });
+                            location.href = `/end?id=${video.id}&player=${player["player"]}&user_id=${user_id}&roomId=${roomId}`;
+
                         });
                     } catch (e) {
                         // remove the message box from the page after the video is posted

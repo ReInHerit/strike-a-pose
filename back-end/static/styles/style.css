@@ -10,6 +10,13 @@
     border: none;
 }
 
+.btn-secondary {
+    background-color: #5e5e5e;
+    border: none;
+    display: block;
+    width: 100%;
+}
+
 #title {
     color: #FF5733;
     font-family: URW Chancery L, cursive;
@@ -38,7 +45,8 @@
 
 #victoryImg {
     display: block;
-    height: 50vh;
+    /*height: 50vh;*/
+    padding: 0 20px 0 0;
     margin-left: auto;
     margin-right: auto;
 }
@@ -83,7 +91,8 @@
     font-family: Arial, Helvetica, sans-serif;
     font-weight: bold;
     font-size: 2.5rem;
-    text-shadow: 2px 2px 4px black;
+    text-shadow: 1px 2px 3px black;
+    text-align: center;
 }
 
 body {
@@ -141,10 +150,6 @@ body {
 }
 
 #rooms-list {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
     text-align: center;
     border-radius: 0.25rem;
     display: block;
@@ -159,37 +164,77 @@ body {
     display: inline-table;
 }
 
-#add_room_row {
+#add_room_row, #join_room_row {
     width: 100%;
 }
 
-#add_room_row td:nth-child(1) {
-    width: 21%;
+th:nth-child(1), td:nth-child(1) {
+    width: 6vw;
+}
+
+#add_room_row td:nth-child(1), #join_room_row td:nth-child(1) {
+    width: 21vw;
     background-color: #ff5733;
     color: white;
 }
 
-th:nth-child(1), td:nth-child(1) {
-    width: 4%;
-}
-
 th:nth-child(2), td:nth-child(2) {
-    width: 17%;
+    width: 15vw;
 }
 
-th:nth-child(3), td:nth-child(3), #add_room_row td:nth-child(2),
-th:nth-child(4), td:nth-child(4), #add_room_row td:nth-child(3),
-th:nth-child(5), td:nth-child(5), #add_room_row td:nth-child(4),
-th:nth-child(6), td:nth-child(6), #add_room_row td:nth-child(5) {
-    width: 19%;
+th:nth-child(3), td:nth-child(3), th:nth-child(4), td:nth-child(4),
+th:nth-child(5), td:nth-child(5), th:nth-child(6), td:nth-child(6) {
+    width: 19vw;
 }
 
 th:nth-child(7), td:nth-child(7) {
-    width: auto;
+    width: 3vw;
+}
+
+#add_room_row td:nth-child(2), #add_room_row td:nth-child(3),
+#add_room_row td:nth-child(4), #add_room_row td:nth-child(5) {
+    width: 19vw;
+}
+
+caption {
+    padding-left: 10px;
+}
+
+#add_room_row td:nth-child(6) {
+    width: 3vw;
+}
+
+#join_room_row td:nth-child(3), #join_room_row td:nth-child(4) {
+    width: 15vw;
+}
+
+#join_room_row td:nth-child(2), #join_room_row td:nth-child(5) {
+    width: 23vw;
+}
+
+#join_room_row td:nth-child(6) {
+    width: 3vw;
+}
+
+#add_room_row td:nth-child(6) a, #join_room_row td:nth-child(6) a {
+    padding: 0;
 }
 
 .table td, .table th {
     padding: 0.2rem;
+}
+
+.popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    z-index: 1000;
 }
 
 #rooms-title {
@@ -197,17 +242,13 @@ th:nth-child(7), td:nth-child(7) {
     background-color: #FF5733;
     height: calc(100% - 1rem);
     vertical-align: middle;
-    /*cursor: pointer;*/
-    /*user-select: none;*/
-
-    width: 100%;
-
     border: none;
 }
+
 .enabled {
     pointer-events: auto;
-    opacity: 1;
-    ;
+    pointer: hand;
+    opacity: 1;;
 }
 
 /* CSS class for disabling elements */
@@ -216,6 +257,12 @@ th:nth-child(7), td:nth-child(7) {
     pointer: default;
     opacity: 0.5;
 }
+
+#roomid_textInput {
+    width: 100%;
+
+}
+
 #rooms-title h4 {
     padding: 0.375rem 0.75rem;
     color: white;
@@ -258,6 +305,7 @@ th:nth-child(7), td:nth-child(7) {
 .div_end {
     padding: 20px;
     background-color: white;
+    max-width: 533.33px;
 }
 
 .div_index, .div_signup {
@@ -368,8 +416,7 @@ input:checked + .slider:before {
 
 #form {
     position: relative;
-    margin: auto;
-    margin-top: 10px;
+    margin: 10px auto auto;
     display: none;
 }
 
@@ -425,25 +472,6 @@ input:checked + .slider:before {
     display: none;
 }
 
-/*#room_host{*/
-/*  float: left;*/
-/*  width: 49%;*/
-/*  margin-right: 1%;*/
-/*}*/
-
-/*#room_join{*/
-/*  float: right;*/
-/*  width: 49%;*/
-/*  margin-left: 1%;*/
-/*}*/
-
-/*.id_room{*/
-/*  display: none;*/
-/*  text-align: center;*/
-/*  margin-top: 11%;*/
-/*}*/
-/* Disable textarea arrows */
-/* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
     -webkit-appearance: none;

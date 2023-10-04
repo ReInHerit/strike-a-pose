@@ -8,43 +8,33 @@ const players_input = $("#nPlayers_setted");
 const poses_input = $("#nPose_setted")[0];
 const rounds_input = $("#nRound_setted")[0];
 const addRoomBtn = $("#add-room-btn");
-
-// console.log(playersModeValue);
+const joinRoomBtn = $("#join-room-btn");
+const join_room_input = $("#roomid_textInput");
+let serverRoomsData = [];
 const uniqueId = $("#user-random-id").text();
 console.log("uniqueId:", waitingScreen, $("#waiting-screen"));
 let isStartingGame = false;
 let gameData = {};
 socket.on("connect", () => {
     console.log("Connected to server");
-    socket.emit("user_connected", uniqueId);
-});
-socket.on("update_users", (userIds) => {
-    // Update the UI to display the count and user IDs
-    const connectedPlayersCount = userIds.length;
-    const connectedPlayersList = userIds.join(", ");
-
-    console.log("Connected players:", connectedPlayersCount);
-    console.log("User IDs:", connectedPlayersList);
-
-    // You can update the UI elements with the player count and list as needed.
 });
 socket.on("disconnect", () => {
     console.log("Disconnected from server");
-    socket.emit("disconnect_user", isStartingGame);
 });
 socket.on("connect_error", (err) => {
     console.log(`connect_error due to ${err.message}`);
 });
-let nRound, nPose;
-let roomsData = [];
 
+// let nRound, nPose;
+let roomsData = [];
 
 $(document).ready(async function() {
     await initialize();
 
     async function initialize() {
-
-        await fetchRoomsData();
+        // Initial check when the page loads
+        console.log("in initialize")
+        console.log(serverRoomsData);
         await updateRoomsList();
     }
     players_input.on("change", function() {
@@ -66,35 +56,90 @@ $(document).ready(async function() {
         const rounds = row.find("#nRound_setted").val();
         const level = row.find("#nRound_setted").val();
         createRoom(poses, rounds, level, playersMode);
-
     });
 
-    document.querySelector("table").addEventListener("click", function(event) {
-        if (event.target.classList.contains("fa-solid") && event.target.classList.contains("fa-plus-circle")) {
-            // The user clicked the "join" button icon
-            joinRoom(event.target);
+    function displayPopup(message) {
+            const popup = $("#popup");
+            popup.text(message);
+            popup.fadeIn();
+
+            // Automatically hide the popup after 3 seconds
+            setTimeout(() => {
+                popup.fadeOut();
+            }, 3000);
         }
+
+    async function checkRoomValidity() {
+        const row = $(this).closest("tr");
+        const room_id = row.find("#roomid_textInput").val();
+        const room_id_int = parseInt(room_id);
+        await fetchRoomsData();
+        let errorMessage = "";
+        console.log("in checkRoomValidity", room_id_int, !isNaN(room_id_int))
+        if (!isNaN(room_id_int)) {
+            const matchingRoom = serverRoomsData.find(room =>
+                room.room_id === room_id_int
+            );
+            console.log("find matching room", matchingRoom)
+            if (matchingRoom) {
+                if (matchingRoom.players_mode === "2" && matchingRoom.creator !== uniqueId) {
+                    joinRoomBtn.removeClass("disabled");
+                    joinRoomBtn.addClass("enabled");
+                    errorMessage = "Click the join button to start the game."
+                } else if (matchingRoom.players_mode !== "2") {
+                    joinRoomBtn.removeClass("enabled");
+                    joinRoomBtn.addClass("disabled");
+                    errorMessage = "Invalid room ID. You cannot join a 'solo' room.";
+                } else if (matchingRoom.creator === uniqueId) {
+                    joinRoomBtn.removeClass("enabled");
+                    joinRoomBtn.addClass("disabled");
+                    errorMessage = "Invalid room ID. You cannot join your own room.";
+                }
+            } else {
+                joinRoomBtn.removeClass("enabled");
+                joinRoomBtn.addClass("disabled");
+                errorMessage = "Invalid room ID. Please enter a valid room ID.";
+            }
+        } else {
+            joinRoomBtn.removeClass("enabled");
+            joinRoomBtn.addClass("disabled");
+            errorMessage = "Invalid room ID. Please enter a valid room ID2.";
+        }
+
+        displayPopup(errorMessage);
+
+    }
+
+    // Event listener for the input change
+    join_room_input.on("change", async function() {
+        console.log("in change")
+        await checkRoomValidity.call(this);
     });
+
+    // Event listener for the join button click
+    joinRoomBtn.on("click", function() {
+        const row = $(this).closest("tr");
+        const room_id = row.find("#roomid_textInput").val();
+        const room_id_int = parseInt(room_id);
+
+        if (!isNaN(room_id_int) && serverRoomsData.some(room => room.room_id === room_id_int)) {
+            joinRoom(room_id);
+        }
+        else { console.log("Invalid room ID: " + room_id); }
+    });
+
 
     async function fetchRoomsData() {
         await fetch(`${Config.SERVER_URL}rooms_data`)
               .then(handleResponse)
               .then(json => {
                   console.log(json);
-                  roomsData = json.rooms;
-                  console.log("json_rooms: ", roomsData);
+                  serverRoomsData = json.rooms;
               })
               .catch(error => {
                   console.error("Fetch error:", error);
               });
     }
-
-    socket.on("room_created", (data) => {
-        if (!roomsData.some(room => room.room_id === data.room_id)) {
-            addRoomToData(data);
-            updateRoomsList();
-        }
-    });
 
     async function createRoom(poses, rounds, level, playersMode) {
         try {
@@ -113,12 +158,13 @@ $(document).ready(async function() {
 
             if (!response.ok) {
                 console.error("Response not OK:", response);
-                // Handle the error here, if needed
                 return;
             }
 
             const json = await response.json();
 
+            addRoomToData(json);
+            await updateRoomsList()
             console.log(json);
 
         } catch (error) {
@@ -151,13 +197,7 @@ $(document).ready(async function() {
         roomsData.forEach((room, index) => {
             create_room_row(table, room, index + 1);
         });
-        socket.emit("update_rooms");
     }
-
-    socket.on("update_rooms", async () => {
-        await fetchRoomsData();
-        await updateRoomsList();
-    });
 
     function create_room_row(table, room_obj, row_id) {
         const newRow = table.insertRow();
@@ -204,7 +244,7 @@ $(document).ready(async function() {
         newRow.cells[1].textContent = room_obj.room_id;
         newRow.cells[2].innerHTML = clientsIcons;
         newRow.cells[3].textContent = room_obj.n_pose;
-        newRow.cells[4].textContent = room_obj.n_round;
+        newRow.cells[4].textContent = (room_obj.players_mode === "2") ? room_obj.n_round: "-";;
         newRow.cells[5].textContent = room_obj.level;
         newRow.cells[6].appendChild(iconButton);
 
@@ -280,7 +320,7 @@ $(document).ready(async function() {
                       updateRoomsList();
 
                       // Emit an event to notify about room deletion
-                      socket.emit("update_rooms");
+                      // socket.emit("update_rooms");
                   })
                   .catch(handleError);
         } else {
@@ -289,20 +329,9 @@ $(document).ready(async function() {
 
     }
 
-    socket.on("room_deleted", (data) => {
-        const { room_id } = data;
-
-        const index = roomsData.findIndex(room => room.room_id === room_id);
-        if (index !== -1) {
-            roomsData.splice(index, 1);
-            updateRoomsList();
-        }
-        console.log("Room deleted:", room_id);
-    });
-
     //JOIN ROOM
-    async function joinRoom(button) {
-        const room_id = button.getAttribute("href").split("/").pop();
+    async function joinRoom(room_id) {
+        // const room_id = button.getAttribute("href").split("/").pop();
 
         console.log("Joining room:", room_id);
         // Make a GET request to the join route with the room_id and user_id
@@ -323,42 +352,18 @@ $(document).ready(async function() {
     socket.on("join", async (data) => {
         // const currentUserSocketId = socket.id;
         console.log("in socket join:", data);
-        const roomObj = data.roomData;
-
-        console.log(roomsData);
-        const roomIndex = roomsData.findIndex(room => room.room_id === roomObj.id);
-        roomsData[roomIndex].room_id = roomObj.id;
-        roomsData[roomIndex].num_clients = roomObj.num_clients;
-        roomsData[roomIndex].clients = roomObj.clients;
-        roomsData[roomIndex].free_space = roomObj.free;
-        const roomJoined = roomsData[roomIndex];
-        console.log("roomIndex:", roomIndex);
-        if (!roomJoined || roomIndex === -1) {
-
-            console.error("Room not found:", roomIndex);
-            return;
-        }
-        if (roomJoined.clients.includes(uniqueId)) {
-            const row = document.querySelector(`table tbody tr:nth-child(${roomIndex + 1})`);
-            const cells = row.cells;
-            cells[2].innerHTML = `<i id="you" class="fa-solid fa-user"></i><i class="fa-solid fa-user"></i>`;
-            const iconButton = createIconButton(`play/room/${roomJoined.room_id}`, "fa-solid fa-play", "#FF5733", play_versus);
-            cells[6].innerHTML = "";
-            cells[6].appendChild(iconButton);
-            console.error("User already joined the room", roomIndex);
-            return;
-        } else if (roomJoined.num_clients >= 2 || !roomJoined.free_space) {
-            console.log("grayout the row");
-            const row = document.querySelector(`table tbody tr:nth-child(${roomIndex + 1})`);
-
-            console.log(row);
-            if (row) {
-                const cells = row.cells;
-                row.classList.add("grayed-out"); // Add a CSS class for grayed-out style
-                const iconButton = createIconButton(``, "fa-solid fa-gamepad", "gray", play_versus);
-                cells[6].innerHTML = "";
-                cells[6].appendChild(iconButton);
-            }
+        const roomObj = data["room_data"];
+        const joinerId = data["joiner"];
+        if (joinerId === uniqueId) {
+            console.log("in joinerId === uniqueId");
+            await socket.emit("ready_to_start_game", { "room_id": roomObj.id, "user_id": uniqueId });
+            console.log("emitted");
+        } else if (roomObj.creator === uniqueId) {
+            console.log("in roomObj.creator === uniqueId");
+            await socket.emit("ready_to_start_game", { "room_id": roomObj.id, "user_id": uniqueId });
+            console.log("emitted");
+        } else {
+            console.log("in else");
         }
     });
 
@@ -366,7 +371,7 @@ $(document).ready(async function() {
     function play_solo(button) {
         const row = button.closest("tr");
         const level = row.cells[5].textContent;
-        const n = row.cells[4].textContent;
+        const n = row.cells[3].textContent;
         console.log("in play_solo", level, n);
 
         window.location = `/game?id=${level}&nPose=${n}&mode=solo&playerId=${uniqueId}`;
@@ -379,22 +384,13 @@ $(document).ready(async function() {
         isStartingGame = true;
         await socket.emit("ready_to_start_game", { "room_id": room_id, "user_id": uniqueId });
         console.log("emitted");
-        // Listen for a confirmation from the server to start the game
-
     }
 
-    socket.on("start_game", (data) => {
-        console.log(data);
-        gameData = game_data(data);
+    socket.on("start_game", async (room) => {
+        console.log(room["id"]);
+        gameData = await game_data(room["id"]);
         const pictures_number = parseInt(gameData["nPose"], 10);
-        let picturesArray = [];
-        for (let i = 1; i <= pictures_number; i++) {
-
-        }
-
-
         console.log(gameData, gameData["players"]);
-        // gameData["playerId"] = uniqueId;
         if (uniqueId === gameData["players"][0]) {
             console.log("player1");
             gameData["playerId"] = uniqueId;
@@ -403,24 +399,22 @@ $(document).ready(async function() {
             gameData["playerId"] = uniqueId;
             console.log("player2");
             showWaitingScreen();
-
         }
-
-
         console.log("play_versus function executed");
     });
     socket.on("start_player2", (data) => {
         if (gameData["players"][1] === uniqueId) {
+            gameData["playerId"] = uniqueId;
             hideWaitingScreen()
-
             isStartingGame = true;
             console.log("Received 'start_player2' signal from server.");
             window.location = `/game?mode=versus&gameData=${JSON.stringify(gameData)}&player=2`;
         }
     });
-    function game_data(data) {
-        const room_id = data["room"];
-        const room = roomsData.find(room => room.room_id === parseInt(room_id));
+    async function game_data(room_id) {
+        await fetchRoomsData();
+        // const room_id = data["room"];
+        const room = serverRoomsData.find(room => room.room_id === parseInt(room_id));
         console.log(room);
         const players = room.clients;
         // const [player1, player2] = players;
@@ -467,30 +461,17 @@ $(document).ready(async function() {
 
 
     window.logout = async function() {
-        socket.emit("disconnect_user", isStartingGame);
+        window.location = `/logout?user_id=${uniqueId}`;
 
-        if (!isStartingGame) {
-            // await leaveRoom();
-            // await leaveRoom();
-            console.log("logouting");
-            window.location = `/logout?user_id=${uniqueId}`;
-        } else {
-            // Display a message or prevent the logout action
-            alert("You cannot log out while starting a game.");
-        }
     };
 
     window.onbeforeunload = async function(event) {
-        socket.emit("disconnect_user", isStartingGame);
-
         if (isStartingGame) {
             // Display a message to indicate that the user cannot leave while starting a game
-            // event.preventDefault();
+            event.preventDefault();
             event.returnValue = "You cannot leave while starting a game.";
         } else {
             console.log("in onbeforeunload");
-            // socket.emit('disconnect_user', { userId: uniqueId });
-            // Continue with the logout process
             window.location = `/logout?user_id=${uniqueId}`;
         }
     };
