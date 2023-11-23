@@ -27,6 +27,12 @@ def index():
     session["end"] = False
     return render_template("index.html")
 
+@app.route('/policy')
+def policy():
+    smtp_username = os.environ.get('SMTP_USERNAME')
+    return render_template('policy.html', smtp_username=smtp_username)
+
+
 @app.route("/start", methods=["GET"])
 def start():
     user_id = generate_new_user_id()

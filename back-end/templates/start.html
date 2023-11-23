@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
   <meta charset="UTF-8" />
@@ -26,6 +26,26 @@
   <div class="d-flex align-items-center justify-content-center" style="height: 100%;">
     <div class="spinner-border text-light" style="width: 10rem; height: 10rem;" role="status">
       <span class="sr-only">Loading...</span>
+    </div>
+  </div>
+</div>
+<!-- Privacy Policy Popup -->
+<div class="overlay" id="overlay"></div>
+<div id="privacyPopup" class="popup">
+  <div class="popup-content">
+    <h2>Privacy Policy</h2>
+    <!-- Add your privacy policy text here -->
+    <div id="policy_stuff">
+      <!-- Link to open the policy in a new tab -->
+      <a href="{{ url_for('policy') }}" target="_blank">Read Full Privacy Policy</a>
+      <!-- Checkbox to accept the privacy policy -->
+      <label for="acceptCheckbox">
+        <input type="checkbox" id="acceptCheckbox"> I have read and accept the Privacy Policy
+      </label>
+
+      <!-- Accept Button -->
+      <button id="confirmButton" >Confirm</button>
+
     </div>
   </div>
 </div>
@@ -109,16 +129,17 @@
                 <tr>
                   <td id="join-room-title">JOIN ROOM</td>
                   <td></td>
-                  <td>ROOM ID: </td>
+                  <td>ROOM ID:</td>
                   <td>
-                     <input type="text" class="input-group" id="roomid_textInput" name="textInput">
+                    <input type="text" class="input-group" id="roomid_textInput" name="textInput">
                     <div id="popup" class="popup"></div>
                   </td>
                   <td>
 
                   </td>
                   <td>
-                    <a id="join-room-btn" class="btn disabled"><i class="fa-solid fa-right-to-bracket" style="color: #FF5733;"></i></a>
+                    <a id="join-room-btn" class="btn disabled"><i class="fa-solid fa-right-to-bracket"
+                                                                  style="color: #FF5733;"></i></a>
                   </td>
                 </tr>
                 </tbody>

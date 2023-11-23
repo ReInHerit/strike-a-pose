@@ -14,6 +14,7 @@ let serverRoomsData = [];
 const uniqueId = $("#user-random-id").text();
 console.log("uniqueId:", waitingScreen, $("#waiting-screen"));
 let isStartingGame = false;
+localStorage.setItem('privacyAccepted', 'false')
 let gameData = {};
 socket.on("connect", () => {
     console.log("Connected to server");
@@ -128,6 +129,30 @@ $(document).ready(async function() {
         else { console.log("Invalid room ID: " + room_id); }
     });
 
+    // Function to show the privacy policy popup
+    function showPrivacyPopup() {
+        $("#privacyPopup").fadeIn();
+        $("#overlay").fadeIn();
+    }
+
+    // Event listener for the confirm button in the privacy policy popup
+    $("#confirmButton").on("click", function () {
+        // Check if the checkbox is checked
+        if ($("#acceptCheckbox").prop("checked")) {
+            // User has accepted the privacy policy, store the acceptance in localStorage
+            localStorage.setItem('privacyAccepted', 'true');
+            $("#privacyPopup").fadeOut();
+            $("#overlay").fadeOut();
+        } else {
+            // Alert the user to check the box
+            alert("Please check the privacy policy acceptance box before confirming.");
+        }
+    });
+
+    // Check if the user has already accepted the privacy policy
+    if (!localStorage.getItem('privacyAccepted')) {
+        showPrivacyPopup();
+    }
 
     async function fetchRoomsData() {
         await fetch(`${Config.SERVER_URL}rooms_data`)
