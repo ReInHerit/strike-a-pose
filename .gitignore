@@ -1,9 +1,11 @@
 venv 
 __pycache__
 back-end/static/videos
-back-end/database.db
+
 **/.DS_Store
 *.mp4
 /.idea/*
 /node_modules/
 /back-end/.env
+/back-end/static/utility/reset.py
+/back-end/static/utility/resetPictures.py

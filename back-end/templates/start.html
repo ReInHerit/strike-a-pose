@@ -60,6 +60,9 @@
 <div id="start">
   <div id="top">
     <p hidden="true">User's Random ID: <span id="user-random-id">{{ user_id }}</span></p>
+    <a href="{{ url_for('admin_login') }}" target="_blank">
+    <button type="button" class="btn btn-primary ml-auto" id="admin_btn">ADMIN</button>
+    </a>
     <button type="button" class="btn btn-primary ml-auto" id="logout_btn" onclick="logout()">LOGOUT</button>
   </div>
   <img src="/static/assets/logo.png" class="logo_mini" id="logo_start" />

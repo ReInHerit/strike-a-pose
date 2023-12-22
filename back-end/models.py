@@ -1,11 +1,25 @@
 from flask_login import UserMixin
-from app import db
+from app import db, bcrypt
 
 
 class User(db.Model, UserMixin):
-    id = db.Column(db.String(36), primary_key=True)
+    __tablename__ = 'user'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     videos = db.relationship('Video', backref='user', lazy=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password_hash = db.Column(db.String(100), nullable=False)
+    new_username = db.Column(db.String(50))
+    new_password_hash = db.Column(db.String(100))
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    is_superuser = db.Column(db.Boolean, default=False)
+    registered = db.Column(db.Boolean, default=False)
+    confirmed = db.Column(db.Boolean, default=False)
+    confirmation_token = db.Column(db.String(100), unique=True)
+    def set_password(self, password):
+        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
 
+    def check_password(self, password):
+        return bcrypt.check_password_hash(self.password_hash, password)
     def as_dict(self):
         return {"id": self.id}
 
@@ -37,11 +51,12 @@ class Picture(db.Model):
     author_name = db.Column(db.String(255), nullable=False)
     artwork_name = db.Column(db.String(255), nullable=False)
     path = db.Column(db.String(255), nullable=False)
+    category = db.Column(db.String(50), nullable=False)  # Add category field
     level_id = db.Column(db.Integer, db.ForeignKey('level.id'),
                          nullable=False)
 
     def as_dict(self):
-        return {"id": self.id, "path": self.path, "author_name": self.author_name, "artwork_name": self.artwork_name}
+        return {"id": self.id, "path": self.path, "author_name": self.author_name, "artwork_name": self.artwork_name, "category": self.category}
 
 
 class Video(db.Model):

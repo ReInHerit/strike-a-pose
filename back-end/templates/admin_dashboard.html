@@ -1,0 +1,48 @@
+<!-- admin_dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <!-- Include any necessary stylesheets or scripts -->
+</head>
+<body>
+    <header>
+        <h1>Admin Dashboard</h1>
+        <!-- Include any navigation links or buttons -->
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('admin_requests') }}">Admin Requests</a></li>
+                <!-- Add more navigation links as needed -->
+                <li><a href="{{ url_for('logout') }}">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Display important information or statistics -->
+        <section>
+            <h2>Application Statistics</h2>
+            <!-- Include charts, graphs, or other relevant information -->
+        </section>
+
+        <!-- Manage Users -->
+        <section>
+            <h2>User Management</h2>
+            <ul>
+                <li><a href="{{ url_for('view_all_users') }}">View All Users</a></li>
+                <li><a href="{{ url_for('manage_roles') }}">Manage Roles</a></li>
+                <!-- Add more user management links as needed -->
+            </ul>
+        </section>
+
+        <!-- Other Sections as Needed -->
+
+    </main>
+
+    <footer>
+        <!-- Footer content, e.g., copyright information -->
+    </footer>
+</body>
+</html>

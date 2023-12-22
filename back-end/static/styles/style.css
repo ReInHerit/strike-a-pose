@@ -198,6 +198,7 @@ th:nth-child(7), td:nth-child(7) {
 
 caption {
     padding-left: 10px;
+    caption-side: top;
 }
 
 #add_room_row td:nth-child(6) {
@@ -319,7 +320,7 @@ caption {
     padding: 1rem;
     font-size: 1.5rem;
     font-family: Helvetica, sans-serif;
-    text-align: center;
+    text-align: left;
     line-height: calc(100% + 0.5rem);
 }
 
@@ -682,3 +683,8 @@ input[type=number] {
     margin-right: 1rem;
     font-size: 1.2rem;
     margin-top: 0.5rem;}
+
+#tableG1, tableG2 {
+    text-align: center;
+}
+

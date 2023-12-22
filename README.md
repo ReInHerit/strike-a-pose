@@ -18,10 +18,25 @@ This app won a Best Demo Honorable Mention award at ACM Multimedia 2022, the for
 
 
 ## System set-up
+### Prerequisites
+In order to run this demo you need these software installed on your computer:
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker-compose](https://docs.docker.com/compose/install/)
+- Python 3.10 (or higher)
+#### email setup
+To send emails to the users, the system needs to be configured with a valid Gmail account. Then, you will need to generate an App Password by following the instructions provided in the first point on this link: https://www.interviewqs.com/blog/py-email.
 
-### Web domain setup
+After generating the App Password, you will need to enter it, along with your email address, into a copy of the `back-end/.env_template` file. Additionally, make sure to remove the **_template** part of the file name, so the updated file should be named ___.env___. This configuration file, .env, will then be used by the application to authenticate with the email service.
+#### flask secret key setup
+To generate a secret key for the flask application, in a console navigate to strike-a-pose/back-end/static/utility/ then use the following command:
+```
+python generate_secret_key.py
+```
+Then copy the generated key and paste it in the file  .env file generated above, in the variable SECRET_KEY.
 
-If a domain with HTTPS is available simply use the standalone Dockerfile. E.g. that DOckerfile allows to deploy the app on Heroku.
+#### Web domain setup
+
+If a domain with HTTPS is available simply use the standalone Dockerfile. E.g. that Dockerfile allows to deploy the app on Heroku.
 Otherwise use the docker-compose approach that spins a docker container with an nginx server and a custom SSL certificate that exposes the docker with Flask and app as HTTPS to access the camera through the web browser.
 In this second option the operation is a bit complex, as follows.
 
@@ -51,6 +66,26 @@ point to the server IP address), as in:
 ```
 **<SERVER_IP>** is the IP address of the computer where the containers are executed.
 
+#### Superuser generation
+We need a superuser to manage the database. To generate it:
+1) open `back-end/superuser` with your preferred IDE, find the following lines: 
+```
+superuser = User(
+        username='superadmin',
+        email='superadmin@example.com',  # Set a unique and non-null email
+        is_superuser=True,
+        registered=True,  
+        confirmed=True,  
+    )
+superuser.set_password('superadminpassword')
+```
+then substitute ___superadmin___, ___superadmin@example.com___ and ___superadminpassword___ with your desired username, email and password.
+
+2) in the console navigate to `back-end/` folder then use the following command:
+```
+python superuser.py
+```
+
 ### Docker setup
 
 Run Docker-compose:
@@ -63,38 +98,46 @@ or to execute it in detach mode:
 ```
 docker compose up -d
 ```
-Upon the first docker-compose execution initialize the database running the *reset.py* script
-Execute again the script if you want to restart again the system (eliminating the registered users).
-Use the following:
-```
-<user>@<host>:~$ docker container exec -it flask /bin/bash
-root@<CONTAINER-ID>:/usr/src/app# python reset.py
-...
-root@<CONTAINER-ID>:/usr/src/app# exit
-```
 
-### Changing/updating artworks
+[//]: # (Upon the first docker-compose execution initialize the database running the *reset.py* script)
 
-To change the artworks that are shown in the system, follow the following steps:
-1. Download an image containing a half-body or full-body pose
-2. Rename the image with the format *\<artwork_name\>-\<artist_name\>\.\<format\>*
-   Replacing spaces with the _ character (e.g. *Mona_Lisa-Leonardo_da_Vinci.jpeg*)
-3. Insert/Remove the image in the appropriate folder (halfBust folder for half-length pose and fullLength folder for full-length pose) that is located in
-   pose/back-end/static/assets/
-4. Run the *resetPictures.py* script to update the database with the new images
-   ```
-   <user>@<host>:~$ docker container exec -it flask /bin/bash
-   root@<CONTAINER-ID>:/usr/src/app# python resetPictures.py
-   ...
-   root@<CONTAINER-ID>:/usr/src/app# exit
-   ```
+[//]: # (Execute again the script if you want to restart again the system &#40;eliminating the registered users&#41;.)
 
-## Turning on skeleton view
-To show the skeleton (for debugging or to ease the game, user tests show how much people appreciate it) set the *DEBUG* variable to true in the file *back-end/static/js/scripts/config.js*
+[//]: # (Use the following:)
 
-```
-static DEBUG = true;
-```
+[//]: # (```)
+
+[//]: # (<user>@<host>:~$ docker container exec -it flask /bin/bash)
+
+[//]: # (root@<CONTAINER-ID>:/usr/src/app# python reset.py)
+
+[//]: # (...)
+
+[//]: # (root@<CONTAINER-ID>:/usr/src/app# exit)
+
+[//]: # (```)
+
+### Browse to the application
+Open a web browser and go to the address: https://strikeapose.it. 
+If security warnings appear, ignore them and proceed to the website.
+
+### To change the artworks that are shown in the system, follow the following steps:
+1. click on the ___ADMIN___ button in the top left corner of the screen. You'll be redirected to the admin page;
+2. signin with the superuser credentials;
+3. now you can add, or delete the artworks in the database using the respective buttons:
+- ADD: a popup will appear, asking you to insert the name of the author name, artwork name, the category type (half bust or full length) and the image of the artwork. Clicking on Choose File you will be asked to select an image from your hard disk. The image must be a .jpg or .png file. Then click on Add Artwork to add it to the database. The image will be saved in the category's corresponding folder `back-end/static/assets/\<category\>` (e.g. `back-end/static/assets/halfBust` for half-length pose and `back-end/static/assets/fullLength` for full-length pose); 
+- DELETE: click on the button corresponding to the row of the artwork you want to delete. A popup will appear, asking you to confirm the deletion. Click on Delete to confirm the deletion. 
+
+[//]: # (## Turning on skeleton view)
+
+[//]: # (To show the skeleton &#40;for debugging or to ease the game, user tests show how much people appreciate it&#41; set the *DEBUG* variable to true in the file *back-end/static/js/scripts/config.js*)
+
+[//]: # ()
+[//]: # (```)
+
+[//]: # (static DEBUG = true;)
+
+[//]: # (```)
 
 ## Citation
 

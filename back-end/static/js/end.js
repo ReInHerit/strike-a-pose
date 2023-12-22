@@ -5,7 +5,9 @@ import { stringTimeToSeconds } from "./scripts/utils.js";
 const serverUrl = Config.SERVER_URL // `${window.location.protocol}//${window.location.hostname}`;
 const socket = io.connect(serverUrl);
 let roomId;
-let user_id
+let user_id;
+let paintings_ids;
+let poses;
 let videoDeleted = false;
 
 $(async () => {
@@ -13,6 +15,9 @@ $(async () => {
     const player = queryParams.get("player");
     user_id = queryParams.get("user_id");
     roomId = queryParams.get("roomId");
+    paintings_ids = queryParams.has("paintings_ids") ? queryParams.get("paintings_ids").split(',').map(Number) : [];
+    poses = queryParams.has("poses") ? parseInt(queryParams.get("poses"), 10) : 0;
+    console.log(paintings_ids, poses)
     const endImg = document.getElementById("victoryImg");
     const endText = document.getElementById("final_title");
     socket.on("connect", () => {
@@ -22,12 +27,14 @@ $(async () => {
         console.log("Disconnected from server");
     });
     socket.emit("join_room", roomId)
+
     if (player.normalize() === "solo".normalize()) {
         endImg.src = "/static/assets/end/winner.gif";
         endText.innerHTML = "Congratulations, you win!";
     } else if (player.normalize() === "winner".normalize()) {
         handleWinnerWithdrawn();
     } else {
+        console.log("handleOpponentWithdrawn", paintings_ids)
         await handleOpponentWithdrawn();
     }
     const videoId = queryParams.get("id");
@@ -39,11 +46,9 @@ $(async () => {
     const video = await getVideo(videoId);
     // Add an event listener for the form submission
     $("#email_form").submit(async (event) => {
-        event.preventDefault(); // Prevent the default form submission behavior
+        event.preventDefault();
 
-        // Get the user's email input
         const userEmail = $("#user_email").val();
-
         // Check if the email is valid (you can add more robust email validation)
         if (!isValidEmail(userEmail)) {
             alert("Please enter a valid email address.");
@@ -58,13 +63,15 @@ $(async () => {
             const formData = new FormData();
             formData.append("email", userEmail);
             formData.append("video", videoBlob);
+            formData.append(("poses"), poses);
+            formData.append(("paintings_ids"), paintings_ids);
             fetch("/send-video", {
             method: "POST",
             body: formData,
         })
         .then((response) => {
             if (response.ok) {
-                return response.text(); // or response.json() if the server sends JSON
+                return response.text();
             } else {
                 throw new Error("Error sending the video.");
             }
@@ -88,9 +95,7 @@ $(async () => {
     });
 
     function isValidEmail(email) {
-    // Regular expression pattern for a valid email address
         const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-
         // Test the email against the pattern
         return emailPattern.test(email);
     }
@@ -105,10 +110,11 @@ $(async () => {
     async function handleOpponentWithdrawn() {
         endImg.src = "/static/assets/end/loadWinner.gif";
         endText.innerHTML = "Waiting for the opponent...";
+
         console.log(roomId, user_id, player)
         if (player === "1") {
-            socket.emit("start_game_player2", roomId);
-        }else if (player === "2") {
+            socket.emit("start_game_player2", roomId, paintings_ids);
+        } else if (player === "2") {
             console.log("acquireResults")
             socket.emit("acquireResults", roomId);
             listenForResults();
@@ -139,7 +145,6 @@ $(async () => {
             console.log("getResults", msg, player)
             const player1_results = msg[0];
             const player2_results = msg[1];
-            // const { myResults, opponentResults } = processResults( msg);
             console.log(player1_results, player2_results)
             displayResults(player1_results, player2_results);
             const winner = determineWinner(player1_results, player2_results);

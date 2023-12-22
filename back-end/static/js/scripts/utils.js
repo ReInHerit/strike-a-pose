@@ -1,11 +1,37 @@
 import { Config } from "./config.js";
-import { getLevel, getPicture, postVideo } from "./fetchUtils.js";
+import { getLevel, getPicture, getAllPictures, postVideo } from "./fetchUtils.js";
 
 let startTime;
 let elapsedTime = 0;
 let timerInterval;
 // const detectorConfig = {modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING};
 // Utility Functions
+async function picture_ids_for_level(level) {
+    const picture_list = await getAllPictures();
+    console.log(picture_list)
+    let picture_ids = [];
+    let level_pictures_ids = [];
+    for (let i = 0; i < picture_list.length; i++) {
+        picture_ids.push(picture_list[i].id);
+    }
+    console.log(picture_ids)
+    for (let i = 0; i < picture_ids.length; i++) {
+        console.log(picture_ids[i]);
+        const id = picture_ids[i];
+        // const picture = picture_list[i];
+        //
+        // console.log(picture_list[i].category)
+        if (
+            (level.id === 1 && picture_list[i].category === 'halfBust') ||
+            (level.id === 2 && picture_list[i].category === 'fullLength') ||
+            (level.id === 3)
+        ) {
+            level_pictures_ids.push(id);
+        }
+    }
+    console.log(level_pictures_ids)
+    return level_pictures_ids;
+}
 function normalizeKPs(poses, width, height) {
     return (poses?.[0]?.keypoints || [])
           .filter((kp) => kp.score > 0.3)
@@ -124,6 +150,7 @@ async function createImage(src) {
 }
 
 function createPictureLoader(imgCanvas) {
+    console.log(imgCanvas)
     return async (id) => {
         const strongDetector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet, {
             modelType: poseDetection.movenet.modelType.SINGLEPOSE_THUNDER
@@ -241,18 +268,22 @@ const updateScoreAndCanvas = (computedDistancePercentage, camCanvas, video, filt
 
 const initGame = async (levelId, poses, video, camCanvas, imgCanvas) => {
     const level = await getLevel(levelId);
+    const level_picture_ids = await picture_ids_for_level(level);
+    console.log(level.name, level.id, level_picture_ids, poses, levelId)
     let round = 0;
     const detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet);
     const pictureLoad = await createPictureLoader(imgCanvas);
+
     let userVideoList = [];
-    let idRandom = level.picture_ids.sort(() => Math.random() - 0.5);
-    const nPictures = Math.min(level.picture_ids.length, parseInt(poses));//Config.MAX_PICTURES_SOLO
+    let idRandom = level_picture_ids.sort(() => Math.random() - 0.5);
+
+    const nPictures = Math.min(idRandom.length, parseInt(poses));//Config.MAX_PICTURES_SOLO
 
     const nextRound = async () => {
         const id = idRandom[round];
         const userId = localStorage.getItem("userId");
         const { imageKPNames, distanceFromImg } = await pictureLoad(id);
-        console.log('userId', userId);
+
         const imgQueue = queueGenerator(Config.VIDEO_SECONDS * Config.FRAME_RATE);
 
         const gameLoop = setInterval(async () => {
@@ -263,12 +294,12 @@ const initGame = async (levelId, poses, video, camCanvas, imgCanvas) => {
             const filteredVideoKPs = videoKPs.filter((kp) => imageKPNames.includes(kp.name));
 
             const computedDistance = distanceFromImg(filteredVideoKPs);
-            console.log("1 - computedDistance:", computedDistance, "/ Config.MATCH_LEVEL:", Config.MATCH_LEVEL, "* 100=",Math.min(99, ((1 - computedDistance) / Config.MATCH_LEVEL) * 100).toFixed(0));
+            // console.log("1 - computedDistance:", computedDistance, "/ Config.MATCH_LEVEL:", Config.MATCH_LEVEL, "* 100=",Math.min(99, ((1 - computedDistance) / Config.MATCH_LEVEL) * 100).toFixed(0));
             const computedDistancePercentage = Math.min(100, ((1 - computedDistance) / Config.MATCH_LEVEL) * 100).toFixed(0);
-            console.log("computedDistancePercentage", computedDistancePercentage);
+            // console.log("computedDistancePercentage", computedDistancePercentage);
             updateScoreAndCanvas(computedDistancePercentage, camCanvas, video, filteredVideoKPs);
-            console.log(1 - computedDistance, ">", Config.MATCH_LEVEL)
-            console.log(1.1 - computedDistance, ">", Config.MATCH_LEVEL)
+            // console.log(1 - computedDistance, ">", Config.MATCH_LEVEL)
+            // console.log(1.1 - computedDistance, ">", Config.MATCH_LEVEL)
             if (imgQueue.isFull() && 1.1 - computedDistance > Config.MATCH_LEVEL) {
                 clearInterval(gameLoop);
                 console.log("MATCH!");
@@ -281,7 +312,7 @@ const initGame = async (levelId, poses, video, camCanvas, imgCanvas) => {
                 } else {
                     // Prepare data for video production
                     const formData = new FormData();
-                    level.picture_ids.forEach((pictureId) => {
+                    idRandom.forEach((pictureId) => {
                         formData.append("picture_ids[]", pictureId);
                     });
                     userVideoList.forEach(({ id, frameList }) => {
@@ -296,7 +327,7 @@ const initGame = async (levelId, poses, video, camCanvas, imgCanvas) => {
                         const video = await postVideo(formData);
                         // remove the message box from the page after the video is posted
                         messageBox.remove();
-                        location.href = `/end?id=${video.id}&player=solo`;
+                        location.href = `/end?id=${video.id}&player=solo&poses=${poses}&paintings_ids=${idRandom}`;
                     } catch (e) {
                         console.error(e);
                         // remove the message box from the page after the video is posted
@@ -318,8 +349,8 @@ const initGame = async (levelId, poses, video, camCanvas, imgCanvas) => {
     return nextRound();
 };
 
-const initGame2 = async (socket, roomId, picturesArray, nPose, nRound, video, camCanvas, imgCanvas, user_id, player) => {
-    console.log("initGame2", roomId, picturesArray, nPose, nRound, video, camCanvas, imgCanvas, user_id, player)
+const initGame2 = async (socket, roomId, paintings_ids, poses, nRound, video, camCanvas, imgCanvas, user_id, player) => {
+    console.log("initGame2", roomId, paintings_ids, poses, nRound, video, camCanvas, imgCanvas, user_id, player)
     let first = true;
     // player === 1 ? first = true : first = false;
 
@@ -331,11 +362,11 @@ const initGame2 = async (socket, roomId, picturesArray, nPose, nRound, video, ca
 
     const detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet);
     const pictureLoad = await createPictureLoader(imgCanvas);
-
     alert("Round " + (round + 1) + " begins!");
     console.log(round)
+
     const nextPose = async () => {
-        const id = picturesArray[pose];
+        const id = paintings_ids[pose];
 
         const { imageKPNames, distanceFromImg } = await pictureLoad(id);
 
@@ -374,14 +405,15 @@ const initGame2 = async (socket, roomId, picturesArray, nPose, nRound, video, ca
                 pose++;
                 userVideoList.push({ id, frameList: imgQueue.queue });
                 imgQueue.clear();
-                if (pose < nPose) {
+                if (pose < poses) {
                     await nextPose();
                 } else if (round >= nRound - 1) {
                     gameResults.push(roundResults);
 
                     const formData = new FormData();
 
-                    picturesArray.forEach((pictureId) => {
+                    paintings_ids.forEach((pictureId) => {
+                        console.log('pictureId:',pictureId)
                         formData.append("picture_ids[]", pictureId);
                     });
                     userVideoList.forEach(({ id, frameList }) => {
@@ -400,10 +432,10 @@ const initGame2 = async (socket, roomId, picturesArray, nPose, nRound, video, ca
                         socket.on("results_received", async (player) => {
                             // remove the message box from the page after the video is posted
                             messageBox.remove();
-                            console.log("Results received", roomId, player, player["player"]);
+                            console.log("Results received", roomId, player, player["player"], paintings_ids);
                             localStorage.setItem("retired", "false");
-                            // await socket.emit("start_game_player2", roomId)
-                            location.href = `/end?id=${video.id}&player=${player["player"]}&user_id=${user_id}&roomId=${roomId}`;
+
+                            location.href = `/end?id=${video.id}&player=${player["player"]}&user_id=${user_id}&roomId=${roomId}&paintings_ids=${paintings_ids}&poses=${poses}`;
 
                         });
                     } catch (e) {
@@ -454,5 +486,6 @@ export {
     initGame,
     initGame2,
     createPoseCanvas,
-    stringTimeToSeconds
+    stringTimeToSeconds,
+      picture_ids_for_level
 };

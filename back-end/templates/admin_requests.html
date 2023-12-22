@@ -1,0 +1,41 @@
+<!-- admin_requests.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Requests</title>
+    <!-- Include any necessary stylesheets or scripts -->
+</head>
+<body>
+    <header>
+        <h1>Admin Requests</h1>
+        <!-- Include any navigation links or buttons -->
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('admin_dashboard') }}">Back to Dashboard</a></li>
+                <!-- Add more navigation links as needed -->
+                <li><a href="{{ url_for('logout') }}">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+            <h2>Admin Requests</h2>
+            <ul>
+                {% for user in admin_requests %}
+                    <li>{{ user.username }} - <a href="{{ url_for('confirm_admin_request', user_id=user.id) }}">Confirm</a></li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <!-- Other Sections as Needed -->
+
+    </main>
+
+    <footer>
+        <!-- Footer content, e.g., copyright information -->
+    </footer>
+</body>
+</html>

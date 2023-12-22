@@ -1,5 +1,6 @@
-import { setRoomAttr, getRoom } from "./scripts/fetchUtils.js";
+import { setRoomAttr, getRoom, getLevel } from "./scripts/fetchUtils.js";
 import { Config } from "./scripts/config.js";
+import { picture_ids_for_level } from "./scripts/utils.js";
 
 const serverUrl = Config.SERVER_URL;
 const socket = io.connect(serverUrl);
@@ -35,7 +36,7 @@ $(document).ready(async function() {
     async function initialize() {
         // Initial check when the page loads
         console.log("in initialize")
-        console.log(serverRoomsData);
+        // console.log(serverRoomsData);
         await updateRoomsList();
     }
     players_input.on("change", function() {
@@ -55,7 +56,7 @@ $(document).ready(async function() {
         const playersMode = row.find("#nPlayers_setted").val();
         const poses = row.find("#nPose_setted").val();
         const rounds = row.find("#nRound_setted").val();
-        const level = row.find("#nRound_setted").val();
+        const level = row.find("#level_setted").val();
         createRoom(poses, rounds, level, playersMode);
     });
 
@@ -187,7 +188,11 @@ $(document).ready(async function() {
             }
 
             const json = await response.json();
-
+            // console.log(json.id)
+            const levelObj = await getLevel(level);
+            const level_picture_ids = await picture_ids_for_level(levelObj);
+            const idRandom = level_picture_ids.sort(() => Math.random() - 0.5);
+            json.picture_ids = idRandom;
             addRoomToData(json);
             await updateRoomsList()
             console.log(json);
@@ -205,11 +210,13 @@ $(document).ready(async function() {
             n_pose: newRoom.n_pose,
             n_round: newRoom.n_round,
             level: newRoom.level,
+            picture_ids: newRoom.picture_ids,
             free_space: newRoom.free,
             creator: newRoom.creator,
             clients: newRoom.clients,
             players_mode: newRoom.players_mode
         });
+        console.log("roomsData:", roomsData);
     }
 
     async function updateRoomsList() {
@@ -356,8 +363,6 @@ $(document).ready(async function() {
 
     //JOIN ROOM
     async function joinRoom(room_id) {
-        // const room_id = button.getAttribute("href").split("/").pop();
-
         console.log("Joining room:", room_id);
         // Make a GET request to the join route with the room_id and user_id
         fetch(`/join/${room_id}?user_id=${uniqueId}`)
@@ -399,7 +404,7 @@ $(document).ready(async function() {
         const n = row.cells[3].textContent;
         console.log("in play_solo", level, n);
 
-        window.location = `/game?id=${level}&nPose=${n}&mode=solo&playerId=${uniqueId}`;
+        window.location = `/game?mode=solo&id=${level}&nPose=${n}&playerId=${uniqueId}`;
     }
 
     async function play_versus(button) {
@@ -407,6 +412,7 @@ $(document).ready(async function() {
         const room_id = row.cells[1].textContent;
         console.log("in play_versus", room_id);
         isStartingGame = true;
+
         await socket.emit("ready_to_start_game", { "room_id": room_id, "user_id": uniqueId });
         console.log("emitted");
     }
@@ -414,8 +420,6 @@ $(document).ready(async function() {
     socket.on("start_game", async (room) => {
         console.log(room["id"]);
         gameData = await game_data(room["id"]);
-        const pictures_number = parseInt(gameData["nPose"], 10);
-        console.log(gameData, gameData["players"]);
         if (uniqueId === gameData["players"][0]) {
             console.log("player1");
             gameData["playerId"] = uniqueId;
@@ -428,8 +432,10 @@ $(document).ready(async function() {
         console.log("play_versus function executed");
     });
     socket.on("start_player2", (data) => {
+        console.log(data)
         if (gameData["players"][1] === uniqueId) {
             gameData["playerId"] = uniqueId;
+            gameData["paintings_ids"] = data["paintings_ids"];
             hideWaitingScreen()
             isStartingGame = true;
             console.log("Received 'start_player2' signal from server.");
@@ -438,28 +444,42 @@ $(document).ready(async function() {
     });
     async function game_data(room_id) {
         await fetchRoomsData();
-        // const room_id = data["room"];
-        const room = serverRoomsData.find(room => room.room_id === parseInt(room_id));
-        console.log(room);
+        let room = serverRoomsData.find(room => room.room_id === parseInt(room_id));
+        let paintings_ids = []
+        for (let roomObj in roomsData) {
+            console.log(roomsData[roomObj].room_id, room_id)
+            if (roomsData[roomObj].room_id === room_id) {
+                console.log("in if", room);
+                paintings_ids = roomsData[roomObj].picture_ids;
+            }
+        }
+        console.log('roomsData:',roomsData)
         const players = room.clients;
-        // const [player1, player2] = players;
         console.log("start_game event received", room_id, players);
         const nPose = room.n_pose;
         const nRound = room.n_round;
         const playersMode = room.players_mode;
         const creator = room.creator;
-        const level = room.level;
+        const levelId = room.level;
         console.log("in play_versus", room_id, nPose, nRound);
         const gameData = {
             "nPose": nPose.toString(),
             "nRound": nRound.toString(),
             "players": players,
-            "level": level,
+            "paintings_ids": paintings_ids,
+            "level": levelId,
             "roomId": room_id,
             "creator": creator
         };
         return gameData
     }
+    function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
     //LOGOUT
     async function leaveRoom() {
         if (socket !== undefined) {

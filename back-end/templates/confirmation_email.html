@@ -1,0 +1,5 @@
+<!-- confirmation_email.html -->
+
+<p>Thank you for registering as an admin on ExampleApp!</p>
+<p>Please click the following link to confirm your email address:</p>
+<p><a href="{{ url_for('confirm_email', token=user.confirmation_token, _external=True) }}">Confirm Email</a></p>

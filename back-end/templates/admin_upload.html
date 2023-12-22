@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Upload</title>
+</head>
+<body>
+    <h1>Admin Upload Page</h1>
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        {{ form.title.label }} {{ form.title() }}<br>
+        {{ form.image.label }} {{ form.image() }}<br>
+        {{ form.submit() }}
+    </form>
+</body>
+</html>

@@ -4,6 +4,7 @@ from flask_cors import CORS
 from flask_socketio import SocketIO
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 import socket
 
 app = Flask(__name__)
@@ -15,10 +16,15 @@ print(f"CORS: https://{host_name}")
 app.config.from_object("config.DevelopmentConfig")
 
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 print(f'DB: {app.config["SQLALCHEMY_DATABASE_URI"]}')
 bcrypt = Bcrypt(app)
 
 from views import *
+
+
+
+
 
 port = int(os.environ.get("PORT", 5000))
 print(f"Using port: {port}")

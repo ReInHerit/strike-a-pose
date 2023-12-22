@@ -23,3 +23,5 @@ services:
       - ./back-end:/usr/src/app
     environment:
       - PYTHONUNBUFFERED=1
+    env_file:
+      - ./back-end/.env

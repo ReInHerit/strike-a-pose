@@ -1,0 +1,203 @@
+{% extends 'base_admin.html' %}
+
+{% block content %}
+  <div id="admin_container">
+    <div id="form_container" class="wrapper">
+      {% if not session['user_authenticated'] %}
+        <div id="formContent">
+          <!-- Tabs Titles -->
+          <h2 id="loginTab" class="{% if select_signup_tab %}active{% else %}inactive{% endif %} underlineHover" > Sign In </h2>
+          <h2 id="signupTab" class="{% if select_signup_tab %}inactive{% else %}active{% endif %} underlineHover">Sign Up </h2>
+
+          <!-- Login Form -->
+          <form id="loginForm" action="{{ url_for('admin_login') }}" method="post">
+            <input type="text" id="username" class="fadeIn first" name="username" placeholder="Username">
+            <input type="password" id="password" class="fadeIn second" name="password" placeholder="Password">
+
+            <input type="submit" class="fadeIn third btn-primary" value="LOG IN">
+          </form>
+
+          <!-- Sign Up Form -->
+          <form id="signupForm" action="{{ url_for('admin_register') }}" method="post">
+            <input type="text" id="newUsername" class="fadeIn first" name="username" placeholder="Username">
+            <input type="email" id="newEmail" class="fadeIn second" name="newEmail" placeholder="Email">
+            <input type="password" id="newPassword" class="fadeIn third" name="newPassword" placeholder="Password">
+
+            {{ registration_form.csrf_token }}
+            <input type="submit" class="fadeIn fourth btn-primary" value="SIGN UP">
+          </form>
+
+          <div id="formFooter">
+            <!-- Display flash messages -->
+            {% if messages %}
+              <div class="flash-messages">
+                {% for category, message in messages %}
+                  <p class="{{ category }}">{{ message }}</p>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+          </div>
+        </div>
+      {% else %}
+        <div id="admin_content">
+          <div id="admin_header">
+            <div>
+            <img src="/static/assets/logo.png" class="logo_mini" id="logo_start" />
+            <h2>admin dashboard</h2>
+            </div>
+            <button id="adminButton" data-logout-url="{{ url_for('admin_logout') }}" class="btn btn-primary ml-auto">
+                LOGOUT
+              </button>
+          </div>
+          <div id="database-title-row">
+            <h3>Manage Database</h3>
+            <!-- Add Button to Open Modal -->
+
+          </div>
+          <!-- View Pictures Section -->
+          <table id="pictures-table" class="table">
+            <thead>
+            <tr>
+              <th>ID</th>
+              <th>Thumbnail</th>
+              <th>Artwork</th>
+              <th>Author</th>
+              <th>Category</th>
+              <th><button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal"
+                    id="addArtworkButton" title="Click to add a new artwork entry to the database.">+ ADD</button></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for picture in pictures %}
+              <tr>
+                <td>{{ picture.id }}</td>
+                <td><img src="{{ picture.path }}" alt="{{ picture.artwork_name }}"></td>
+                <td>{{ picture.artwork_name }}</td>
+                <td>{{ picture.author_name }}</td>
+                <td>{{ picture.category }}</td>
+                <!-- Remove Picture Form -->
+                <td>
+                  <button type="button" class="btn btn-danger" data-bs-toggle="modal"
+                          data-bs-target="#confirmDelete{{ picture.id }}">
+                    Delete
+                  </button>
+
+                  <!-- Modal -->
+                  <div class="modal fade" id="confirmDelete{{ picture.id }}" tabindex="-1" role="dialog"
+                       aria-labelledby="confirmDeleteLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title" id="confirmDeleteLabel">Confirm Deletion</h5>
+{#                          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">#}
+{#                            <span aria-hidden="true">&times;</span>#}
+{#                          </button>#}
+                        </div>
+                        <div class="modal-body">
+                          Are you sure you want to remove this picture?
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                          <form method="post" action="{{ url_for('admin_database_management') }}"
+                                id="deleteForm{{ picture.id }}">
+                            {{ add_picture_form.csrf_token }}
+                            <input type="hidden" name="delete_picture_id" value="{{ picture.id }}">
+                            <button type="button" class="btn btn-danger" onclick="confirmDelete({{ picture.id }})">
+                              Delete
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+
+          <!-- Add Modal -->
+          <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel"
+               aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="addModalLabel">Add Artwork</h5>
+                </div>
+                <div class="modal-body">
+                  <!-- Include your Add Picture Form here -->
+                  <form method="post" action="{{ url_for('admin_database_management') }}" enctype="multipart/form-data">
+                    {{ add_picture_form.csrf_token }}
+                    {{ add_picture_form.hidden_tag() }}
+                    <input type="text" name="author_name" placeholder="Author name" >
+                    <input type="text" name="artwork_name" placeholder="Artwork name">
+                    <div id="chooseAndCategoryRow">
+                      {{ add_picture_form.image(class="form-control-file") }}
+                      <select id="category" name="category" required="">
+                        <option value="" selected disabled>Category</option>
+                        <option value="fullLength">Full Length</option>
+                        <option value="halfBust">Half Bust</option>
+                    </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Artwork</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% if session['is_superuser'] %}
+            <!-- Additional "Accept Admin Registration" section for superuser -->
+            <h3 id="accept-title">Accept Admin Registration</h3>
+
+            {% if users %}
+              <table id="registration-table" class="table">
+                <thead>
+                <tr>
+                  <th>User ID</th>
+                  <th>Username</th>
+                  <th>Email</th>
+                  <th>Confirmed</th>
+                  <th>Registered</th>
+                  <th></th>
+                  <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for user in users %}
+                  <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.confirmed }}</td>
+                    <td>{{ user.registered }}</td>
+                    <td>
+                      <form method="post" action="{{ url_for('remove_registration', user_id=user.id) }}">
+                        <button type="submit" class="btn btn-danger">Remove</button>
+                      </form>
+                    </td>
+                    <td>
+                      <form method="post" action="{{ url_for('approve_registration', user_id=user.id) }}">
+                        {% if user.confirmed and user.registered %}
+                          <button type="button" class="btn btn-success" disabled>Approved</button>
+                        {% else %}
+                          <button type="submit" class="btn btn-success">Approve</button>
+                          </form></td>
+                        {% endif %}
+                  </tr>
+                {% endfor %}
+                </tbody>
+              </table>
+            {% else %}
+              <p>No registered admin requests.</p>
+            {% endif %}
+
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+  <script type="text/javascript" src="/static/js/admin.js"></script>
+
+{% endblock %}

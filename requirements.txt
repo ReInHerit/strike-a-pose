@@ -5,6 +5,8 @@ Flask-Cors
 Flask-Login
 Flask-SQLAlchemy
 Flask-WTF
+Flask-Migrate
+Flask-Mail
 email_validator
 opencv-python
 waitress

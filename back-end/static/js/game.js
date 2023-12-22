@@ -1,14 +1,11 @@
-import { createPoseCanvas, initGame, initGame2 } from "./scripts/utils.js";
+import { createPoseCanvas, initGame, initGame2, picture_ids_for_level } from "./scripts/utils.js";
 import { Config } from "./scripts/config.js";
+import { getLevel } from "./scripts/fetchUtils.js";
 
 const serverUrl = Config.SERVER_URL; // `${window.location.protocol}//${window.location.hostname}`;
 let socket = io.connect(serverUrl);
 let roomId;
 let user_id;
-// Variables to keep track of game state
-// let isPlayer1Turn = true; // Player 1 starts
-// let gameInProgress = false;
-// localStorage.setItem("retired", "true");
 
 $(async () => {
     const video = $("#video").get(0);
@@ -22,7 +19,6 @@ $(async () => {
     const queryParams = new URLSearchParams(window.location.search);
 
     const gameMode = queryParams.get("mode");
-    // user_id = queryParams.get("playerId");
     // Check if TensorFlow is loaded
     if (typeof tf === "undefined") {
         console.log("TensorFlow is not loaded yet. Waiting...");
@@ -51,19 +47,20 @@ async function initGameIfNeeded(queryParams, gameMode, video, camCanvas, imgCanv
     } else if (gameMode.normalize() === "versus") {
         document.getElementById("canvas-container-img").style.height = "42%";
         document.getElementById("canvas-container-cam").style.height = "46%";
-        const picturesArray = JSON.parse(localStorage.getItem("picturesArray"));
+        // const picturesArray = JSON.parse(localStorage.getItem("picturesArray"));
 
         const game_data = JSON.parse(queryParams.get("gameData"));
         const player = queryParams.get("player");
+        const paintings_ids = game_data["paintings_ids"];
         console.log(game_data);
         roomId = game_data["roomId"];
         user_id = game_data["playerId"];
-        const nPose = parseInt(game_data["nPose"], 10);
+        const poses = parseInt(game_data["nPose"], 10);
         const nRound = parseInt(game_data["nRound"], 10);
 
-        console.log(nPose, nRound, user_id, roomId);
+        console.log(poses, nRound, user_id, roomId);
         document.getElementById("timer").style.display = "flex";
-        await initGame2(socket, roomId, picturesArray, nPose, nRound, video, camCanvas, imgCanvas, user_id, player);
+        await initGame2(socket, roomId, paintings_ids, poses, nRound, video, camCanvas, imgCanvas, user_id, player);
     }
 };
 

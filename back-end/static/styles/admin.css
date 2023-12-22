@@ -1,0 +1,391 @@
+/* BASIC */
+
+html, body {
+    background-position: center !important;
+    background-size: cover !important;
+    background-attachment: fixed;
+    overflow-x: hidden;
+    height: 100vh;
+    font-family: Verdana, sans-serif;
+}
+
+/* STRUCTURE */
+#admin_container {
+    display: flex;
+    flex-direction: column;
+    /*height: 100vh;*/
+}
+
+.wrapper {
+    display: flex;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+#admin_content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80%;
+    height: 100%;
+    margin: 2% 0;
+    background-color: #ffffff;
+    border-radius: 0.25rem;
+}
+
+#admin_header {
+    flex-direction: row;
+    margin: 20px;
+    align-items: flex-start;
+}
+
+#admin_header div {
+    display: flex;
+    align-items: center;
+}
+
+.logo_mini {
+    width: 5rem;
+}
+
+.btn-danger {
+    --bs-btn-border-color: #FF5733;
+}
+
+.btn-primary {
+    background-color: #ff5733;
+    border: none;
+    cursor: pointer;
+    color: #ffffff;
+}
+
+#adminButton {
+    position: relative;
+    height: fit-content;
+}
+
+#admin_header, #database-title-row {
+    display: flex;
+    justify-content: space-between;
+    width: 95%;
+}
+
+#admin_header, #database-title-row, #pictures-table, #accept-title, #registration-table {
+    width: 95%;
+}
+
+/*SIGNIN SIGNUP*/
+#formContent {
+    -webkit-border-radius: 10px 10px 10px 10px;
+    border-radius: 10px 10px 10px 10px;
+    background: #fff;
+    width: 90%;
+    margin: 30vh 0;
+    max-width: 450px;
+    position: relative;
+    padding: 0px;
+    -webkit-box-shadow: 0 30px 60px 0 rgba(0, 0, 0, 0.3);
+    box-shadow: 0 30px 60px 0 rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+#formContent h2 {
+    font-size: calc(1.1rem + .6vw);
+}
+
+#formFooter {
+    background-color: #f6f6f6;
+    border-top: 1px solid #dce8f1;
+    /*height: 60px;*/
+    padding: 16px;
+    text-align: center;
+    -webkit-border-radius: 0 0 10px 10px;
+    border-radius: 0 0 10px 10px;
+    /*overflow: visible;*/
+}
+
+.flash-messages p {
+    margin: auto;
+    width: 85%;
+}
+
+#formFooter.show-messages .flash-messages {
+    display: block; /* Show the flash messages container when it has messages */
+}
+
+/* TABLES */
+tr {
+    vertical-align: baseline;
+}
+
+table tbody tr td:nth-child(2) {
+    text-align: center;
+}
+
+table tbody tr td:nth-child(2) img {
+    display: inline-block;
+    max-width: 50px;
+    max-height: 35px
+}
+
+table tbody tr td:nth-child(6) button {
+    color: black;
+    background-color: #f6f6f6;
+}
+
+/*DATABASE TABLE*/
+
+#pictures-table, #registration-table {
+    margin: 10px auto;
+    text-align: center;
+    background-color: #ff5733;
+    color: #ffffff;
+}
+
+#database-title-row {
+    align-items: center;
+}
+
+#loginForm {
+    display: block;
+}
+
+#signupForm {
+    display: none;
+}
+#chooseAndCategoryRow {
+    display: flex;
+    justify-content: space-between;
+    width: 90%;
+    padding: 20px 0;
+}
+/* TABS */
+a {
+    color: #92badd;
+    display: inline-block;
+    text-decoration: none;
+    font-weight: 400;
+}
+
+h2 {
+    font-weight: 400;
+    text-transform: uppercase;
+    display: inline-block;
+    margin: 10px;
+    color: #000000;
+}
+
+h2.inactive {
+    color: #cccccc;
+}
+
+h2.active {
+    color: #0d0d0d;
+    border-bottom: 4px solid #ff5733;
+}
+
+#accept-title {
+    margin: 10px auto;
+    text-align: left;
+}
+
+/* FORM TYPOGRAPHY */
+input[type=button], input[type=submit], input[type=reset],
+input[type=text], input[type=password], input[type=email] {
+    border: none;
+    padding: 15px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 5px;
+    -webkit-transition: all 0.1s ease-in-out;
+    -moz-transition: all 0.1s ease-in-out;
+    -ms-transition: all 0.1s ease-in-out;
+    -o-transition: all 0.1s ease-in-out;
+    transition: all 0.1s ease-in-out;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+}
+
+input[type=button]:hover, input[type=submit]:hover, input[type=reset]:hover {
+    background-color: #39ace7;
+}
+
+input[type=text], input[type=password], input[type=email] {
+    background-color: #f6f6f6;
+    color: #0d0d0d;
+    width: 90%;
+}
+
+input[type=text]:focus, input[type=password]:focus, input[type=email]:focus {
+    background-color: #fff;
+    border-bottom: 2px solid #5fbae9;
+}
+
+/* Shared styles for :active state */
+input[type=button]:active,
+input[type=submit]:active,
+input[type=reset]:active,
+input[type=email]:active,
+input[type=text]:active,
+input[type=password]:active {
+    -moz-transform: scale(0.95);
+    -webkit-transform: scale(0.95);
+    -o-transform: scale(0.95);
+    -ms-transform: scale(0.95);
+    transform: scale(0.95);
+}
+
+/* Shared styles for placeholder */
+input[type=text]::placeholder,
+input[type=password]::placeholder,
+input[type=email]::placeholder {
+    color: #cccccc;
+}
+
+
+/* ANIMATIONS */
+
+/* Simple CSS3 Fade-in-down Animation */
+.fadeInDown {
+    -webkit-animation-name: fadeInDown;
+    animation-name: fadeInDown;
+    -webkit-animation-duration: 1s;
+    animation-duration: 1s;
+    -webkit-animation-fill-mode: both;
+    animation-fill-mode: both;
+}
+
+@-webkit-keyframes fadeInDown {
+    0% {
+        opacity: 0;
+        -webkit-transform: translate3d(0, -100%, 0);
+        transform: translate3d(0, -100%, 0);
+    }
+    100% {
+        opacity: 1;
+        -webkit-transform: none;
+        transform: none;
+    }
+}
+
+@keyframes fadeInDown {
+    0% {
+        opacity: 0;
+        -webkit-transform: translate3d(0, -100%, 0);
+        transform: translate3d(0, -100%, 0);
+    }
+    100% {
+        opacity: 1;
+        -webkit-transform: none;
+        transform: none;
+    }
+}
+
+/* Simple CSS3 Fade-in Animation */
+@-webkit-keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@-moz-keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.fadeIn {
+    opacity: 0;
+    -webkit-animation: fadeIn ease-in 1;
+    -moz-animation: fadeIn ease-in 1;
+    animation: fadeIn ease-in 1;
+
+    -webkit-animation-fill-mode: forwards;
+    -moz-animation-fill-mode: forwards;
+    animation-fill-mode: forwards;
+
+    -webkit-animation-duration: .2s;
+    -moz-animation-duration: .2s;
+    animation-duration: .2s;
+}
+
+.fadeIn.first {
+    -webkit-animation-delay: 0s;
+    -moz-animation-delay: 0s;
+    animation-delay: 0s;
+}
+
+.fadeIn.second {
+    -webkit-animation-delay: 0.2s;
+    -moz-animation-delay: 0.2s;
+    animation-delay: 0.2s;
+}
+
+.fadeIn.third {
+    -webkit-animation-delay: 0.4s;
+    -moz-animation-delay: 0.4s;
+    animation-delay: 0.4s;
+}
+
+.fadeIn.fourth {
+    -webkit-animation-delay: 0.6s;
+    -moz-animation-delay: 0.6s;
+    animation-delay: 0.6s;
+}
+
+
+/* Simple CSS3 Fade-in Animation */
+.underlineHover:after {
+    display: block;
+    left: 0;
+    bottom: -10px;
+    width: 0;
+    height: 2px;
+    background-color: #ff5733;
+    content: "";
+    transition: width 0.2s;
+}
+
+.underlineHover:hover {
+    color: #0d0d0d;
+}
+
+.underlineHover:hover:after {
+    width: 100%;
+}
+
+
+.fade-out {
+    opacity: 0;
+    transition: opacity 0.5s ease-out; /* Adjust the duration and easing as needed */
+}
+
+/* OTHERS */
+
+*:focus {
+    outline: none;
+}
+
+.modal-body form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
