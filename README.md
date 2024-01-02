@@ -32,12 +32,12 @@ To generate a secret key for the flask application, in a console navigate to str
 ```
 python generate_secret_key.py
 ```
-Then copy the generated key and paste it in the file  .env file generated above, in the variable SECRET_KEY.
+Then copy the generated key and paste it in the file .env file generated above, in the variable SECRET_KEY.
 
 #### Web domain setup
 
 If a domain with HTTPS is available simply use the standalone Dockerfile. E.g. that Dockerfile allows to deploy the app on Heroku.
-Otherwise use the docker-compose approach that spins a docker container with an nginx server and a custom SSL certificate that exposes the docker with Flask and app as HTTPS to access the camera through the web browser.
+Otherwise, use the docker-compose approach that spins a docker container with a nginx server and a custom SSL certificate that exposes the docker with Flask and app as HTTPS to access the camera through the web browser.
 In this second option the operation is a bit complex, as follows.
 
 Add the following line to the `/etc/hosts` file of the computer where the docker containers are running:
@@ -125,7 +125,7 @@ If security warnings appear, ignore them and proceed to the website.
 1. click on the ___ADMIN___ button in the top left corner of the screen. You'll be redirected to the admin page;
 2. signin with the superuser credentials;
 3. now you can add, or delete the artworks in the database using the respective buttons:
-- ADD: a popup will appear, asking you to insert the name of the author name, artwork name, the category type (half bust or full length) and the image of the artwork. Clicking on Choose File you will be asked to select an image from your hard disk. The image must be a .jpg or .png file. Then click on Add Artwork to add it to the database. The image will be saved in the category's corresponding folder `back-end/static/assets/\<category\>` (e.g. `back-end/static/assets/halfBust` for half-length pose and `back-end/static/assets/fullLength` for full-length pose); 
+- ADD: a popup will appear, asking you to insert the name of the author name, artwork name, the category type (half bust or full length) and the image of the artwork. Clicking on Choose File you will be asked to select an image from your hard disk. The image must be a .jpg or .png file. Then click on Add Artwork to add it to the database. The image will be saved in the category's corresponding folder `back-end/static/assets/<category>` (e.g. `back-end/static/assets/halfBust` for half-length pose and `back-end/static/assets/fullLength` for full-length pose); 
 - DELETE: click on the button corresponding to the row of the artwork you want to delete. A popup will appear, asking you to confirm the deletion. Click on Delete to confirm the deletion. 
 
 [//]: # (## Turning on skeleton view)
