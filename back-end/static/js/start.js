@@ -239,32 +239,32 @@ $(document).ready(async function() {
         if (room_obj.players_mode === "2") {
             if (room_obj.creator === uniqueId) {
                 if (room_obj.num_clients === 1) {
-                    iconButton = createIconButton(`delete/room/${room_obj.room_id}`, "fa-solid fa-trash", "#FF5733", deleteRoom, isGrayedOut);
+                    iconButton = createIconButton(`delete/room/${room_obj.room_id}`, "fa-solid fa-trash icon-color", deleteRoom, isGrayedOut);
                     clientsIcons = `<i id="you" class="fa-solid fa-user"></i><i class="fa-regular fa-user"></i>`;
                 } else if (room_obj.num_clients === 2) {
-                    iconButton = createIconButton(`play/room/${room_obj.room_id}`, "fa-solid fa-play", "#FF5733", play_versus, isGrayedOut);
+                    iconButton = createIconButton(`play/room/${room_obj.room_id}`, "fa-solid fa-play icon-color", play_versus, isGrayedOut);
                     clientsIcons = `<i id="you" class="fa-solid fa-user"></i><i class="fa-solid fa-user"></i>`;
                 }
             } else if (room_obj.clients.includes(uniqueId)) {
                 if (room_obj.num_clients === 2) {
-                    iconButton = createIconButton(`play/room/${room_obj.room_id}`, "fa-solid fa-play", "#FF5733", play_versus, isGrayedOut);
+                    iconButton = createIconButton(`play/room/${room_obj.room_id}`, "fa-solid fa-play icon-color", play_versus, isGrayedOut);
                     clientsIcons = `<i id="you" class="fa-solid fa-user"></i><i class="fa-solid fa-user"></i>`;
                 }
             } else {
                 if (room_obj.num_clients === 1) {
-                    iconButton = createIconButton(`join/room/${room_obj.room_id}`, "fa-solid fa-right-to-bracket", "#FF5733", joinRoom, isGrayedOut);
+                    iconButton = createIconButton(`join/room/${room_obj.room_id}`, "fa-solid fa-right-to-bracket icon-color", joinRoom, isGrayedOut);
                     clientsIcons = `<i id="you" class="fa-regular fa-user"></i><i class="fa-solid fa-user"></i>`;
                 } else if (room_obj.num_clients === 2) {
-                    iconButton = createIconButton(`play/room/${room_obj.room_id}`, "fa-solid fa-gamepad", "#FF5733", play_versus, isGrayedOut);
+                    iconButton = createIconButton(`play/room/${room_obj.room_id}`, "fa-solid fa-gamepad icon-color", play_versus, isGrayedOut);
                     clientsIcons = `<i id="you" class="fa-solid fa-user"></i><i class="fa-solid fa-user"></i>`;
                 }
             }
         } else if (room_obj.players_mode === "1") {
             clientsIcons = `<i id="you" class="fa-solid fa-user"></i>`;
             if (room_obj.creator === uniqueId) {
-                iconButton = createIconButton(`play/room/${room_obj.room_id}`, "fa-solid fa-play", "#FF5733", play_solo, isGrayedOut);
+                iconButton = createIconButton(`play/room/${room_obj.room_id}`, "fa-solid fa-play icon-color", play_solo, isGrayedOut);
             } else {
-                iconButton = createIconButton("#", "fa-solid fa-gamepad", "#FF5733", play_solo, isGrayedOut);
+                iconButton = createIconButton("#", "fa-solid fa-gamepad icon-color", play_solo, isGrayedOut);
             }
         }
 
@@ -286,9 +286,9 @@ $(document).ready(async function() {
         }
     }
 
-    function createIconButton(href, iconClass, iconColor, clickHandler, isGrayedOut) {
+    function createIconButton(href, iconClass, clickHandler, isGrayedOut) {
         const button = document.createElement("a");
-        button.innerHTML = `<i class="${iconClass}" style="color: ${iconColor};"></i>`;
+        button.innerHTML = `<i class="${iconClass}""></i>`;
 
         button.href = href;
         // Check if the button should be neutralized (unclickable)

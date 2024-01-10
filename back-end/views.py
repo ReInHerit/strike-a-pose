@@ -569,10 +569,10 @@ def post_video():
     bottom_row_height = 51
     video_width = 1024
     # Load and resize the logo image
-    title_section = cv2.imread('static/assets/video_logo.png')
+    title_section = cv2.imread('static/assets/video_logo2.png')
     title_section_flipped = cv2.flip(title_section, 1)
     center_row = np.zeros((center_row_height, video_width, 3), np.uint8)
-    center_row[5:10, :] = (52, 87, 255)
+    center_row[5:10, :] = (0, 157, 224)
     bottom_row = np.zeros((bottom_row_height, video_width, 3), np.uint8)
     bottom_row[:] = 206
 

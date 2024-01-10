@@ -6,20 +6,35 @@
 }
 
 .btn-primary {
-    background-color: #FF5733;
+    background-color: #006d9b;
     border: none;
 }
-
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open > .dropdown-toggle.btn-primary {
+    background-color: #003d56;
+}
 .btn-secondary {
     background-color: #5e5e5e;
     border: none;
     display: block;
     width: 100%;
 }
+#room_table_header {
+    background-color: #009de0;
+    color: white;
+}
 
+#end_header {
+    background-color: #009de0;
+    color: white;
+    display: flex;
+    align-items: center;
+}
+.icon-color{
+    color: #009de0
+}
 #title {
-    color: #FF5733;
-    font-family: URW Chancery L, cursive;
+    color: #006d9b;
+    font-family: Roboto L, cursive;
     font-weight: bold;
     font-size: 4rem;
     text-shadow: 4px 4px 6px black;
@@ -33,11 +48,46 @@
     padding-left: 0;
 }
 
+/*--------------------------------------------------------------
+# Header
+--------------------------------------------------------------*/
+#header {
+    z-index: 997;
+    display: flex;
+    transition: all 0.5s;
+    height: 9vh;
+    background: #009de0;
+    position: fixed;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#header_logo {
+    max-height: 5vh;
+    margin: 1vh;
+    float: left;
+}
+
+#header_title {
+    color: #FFFFFF;
+    line-height: 1;
+    font-size: 4vh;
+}
+
+#undertitle {
+    font-size: 1.5vh;
+
+}
+#right_header{
+    margin-right: 10px;
+}
 .custom-control h4, #input-checkbox {
     position: relative;
     margin-bottom: 0;
 }
+#admin_btn {
 
+}
 #logout_btn {
     position: relative;
     /*top:10px;*/
@@ -72,7 +122,7 @@
     flex-direction: row;
     align-items: center;
     justify-content: flex-end;
-    width: 90vw;
+    width: 16vw;
 }
 
 #top p {
@@ -87,11 +137,12 @@
 }
 
 #final_title {
-    color: #FF5733;
-    font-family: Arial, Helvetica, sans-serif;
+    margin-top: 20px;
+    color: #006d9b;
+    font-family: Roboto, sans-serif;
     font-weight: bold;
-    font-size: 2.5rem;
-    text-shadow: 1px 2px 3px black;
+    font-size: 1.8rem;
+    text-shadow: 1px 2px 3px #979797;
     text-align: center;
 }
 
@@ -113,7 +164,7 @@ body {
     width: 40vw;
     height: 100vh;
     border-radius: 5px;
-    border: 5px solid #ff5733;
+    border: 5px solid #006d9b;
 }
 
 #video {
@@ -174,7 +225,7 @@ th:nth-child(1), td:nth-child(1) {
 
 #add_room_row td:nth-child(1), #join_room_row td:nth-child(1) {
     width: 21vw;
-    background-color: #ff5733;
+    background-color: #006d9b;
     color: white;
 }
 
@@ -261,7 +312,7 @@ caption {
 }
 #rooms-title {
     width: 100%;
-    background-color: #FF5733;
+    background-color: #006d9b;
     height: calc(100% - 1rem);
     vertical-align: middle;
     border: none;
@@ -296,7 +347,7 @@ caption {
 
 .score-container {
     flex: auto 1 1;
-    background-color: #FF5733;
+    background-color: #006d9b;
     height: 4%;
 }
 
@@ -319,7 +370,7 @@ caption {
     background-color: white;
     padding: 1rem;
     font-size: 1.5rem;
-    font-family: Helvetica, sans-serif;
+    font-family: Roboto, sans-serif;
     text-align: left;
     line-height: calc(100% + 0.5rem);
 }
@@ -357,7 +408,7 @@ caption {
 
 #level-list {
     position: relative;
-    /*top:20%;*/
+    top:10%;
 }
 
 #two-players {
@@ -448,7 +499,7 @@ input:checked + .slider:before {
 
 .score-container2 {
     flex: 50% 1 1;
-    background-color: #FF5733;
+    background-color: #006d9b;
     height: 4%;
 }
 
@@ -471,7 +522,7 @@ input:checked + .slider:before {
 }
 
 .timer-div {
-    background-color: #FF5733;
+    background-color: #006d9b;
     height: 4%;
     text-align: center;
     font-size: 2vh;
@@ -591,13 +642,13 @@ input[type=number] {
     }
 
     #canvas-container-img, #canvas-container-imgSolo {
-        border-top: 5px solid #ff5733;
-        border-left: 2.5px solid #ff5733;
+        border-top: 5px solid #006d9b;
+        border-left: 2.5px solid #006d9b;
     }
 
     #canvas-container-cam, #canvas-container-camSolo {
-        border-top: 5px solid #ff5733;
-        border-right: 2.5px solid #ff5733;
+        border-top: 5px solid #006d9b;
+        border-right: 2.5px solid #006d9b;
     }
 }
 
@@ -646,13 +697,13 @@ input[type=number] {
     }
 
     #canvas-container-img, #canvas-container-imgSolo {
-        border-top: 5px solid #ff5733;
-        border-left: 2.5px solid #ff5733;
+        border-top: 5px solid #006d9b;
+        border-left: 2.5px solid #006d9b;
     }
 
     #canvas-container-cam, #canvas-container-camSolo {
-        border-top: 5px solid #ff5733;
-        border-right: 2.5px solid #ff5733;
+        border-top: 5px solid #006d9b;
+        border-right: 2.5px solid #006d9b;
     }
 }
 
@@ -686,5 +737,91 @@ input[type=number] {
 
 #tableG1, tableG2 {
     text-align: center;
+}
+
+
+/*--------------------------------------------------------------
+# Footer
+--------------------------------------------------------------*/
+#footer {
+    text-align: center;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    padding: 0;
+    z-index: 10;
+}
+
+.footer_container {
+    background: #009de0;
+    position: relative;
+    height: 5vh;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#footer h3 {
+    font-size: 2vw;
+    font-weight: 400;
+    color: #fff;
+    position: relative;
+    line-height: 5%;
+    margin: 0 1vw 0 2vw;
+}
+
+#footer .social-links {
+    margin: 0 2vw;
+}
+
+#footer .social-links a {
+    font-size: 3vh;
+    display: inline-block;
+    /*background: #11303b;*/
+    color: #fff;
+    line-height: 0;
+    padding: 0.5vh 0;
+    border-radius: 50%;
+    text-align: center;
+    width: 4vh;
+    height: 4vh;
+    transition: 0.3s;
+}
+
+#footer .social-links a:hover {
+    background: #fdf003;
+    color: #11303b;
+    text-decoration: none;
+}
+
+@media screen and (min-width: 450px) and (max-width: 769px) {
+    #footer h3 {
+        font-size: 3vw;
+    }
+}
+
+@media screen and (max-width: 449px) {
+    #footer {
+        position: fixed;
+    }
+
+    #footer h3 {
+        font-size: 3vw;
+        line-height: 6vh;
+    }
+
+    #footer .social-links {
+        display: inline-block;
+        margin: 1vh;
+    }
+
+    #footer .social-links a {
+        position: relative;
+        font-size: 5vw;
+        width: 7vw;
+        padding: 1vw;
+        height: 7vw;
+    }
 }
 
