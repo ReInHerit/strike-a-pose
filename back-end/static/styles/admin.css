@@ -54,7 +54,7 @@ html, body {
 }
 
 .btn-primary {
-    background-color: #ff5733;
+    background-color: #006d9b;
     border: none;
     cursor: pointer;
     color: #ffffff;
@@ -139,7 +139,7 @@ table tbody tr td:nth-child(6) button {
 #pictures-table, #registration-table {
     margin: 10px auto;
     text-align: center;
-    background-color: #ff5733;
+    background-color: #006d9b;
     color: #ffffff;
 }
 
@@ -182,7 +182,7 @@ h2.inactive {
 
 h2.active {
     color: #0d0d0d;
-    border-bottom: 4px solid #ff5733;
+    border-bottom: 4px solid #006d9b;
 }
 
 #accept-title {
@@ -359,7 +359,7 @@ input[type=email]::placeholder {
     bottom: -10px;
     width: 0;
     height: 2px;
-    background-color: #ff5733;
+    background-color: #006d9b;
     content: "";
     transition: width 0.2s;
 }
