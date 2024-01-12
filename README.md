@@ -99,24 +99,6 @@ or to execute it in detach mode:
 docker compose up -d
 ```
 
-[//]: # (Upon the first docker-compose execution initialize the database running the *reset.py* script)
-
-[//]: # (Execute again the script if you want to restart again the system &#40;eliminating the registered users&#41;.)
-
-[//]: # (Use the following:)
-
-[//]: # (```)
-
-[//]: # (<user>@<host>:~$ docker container exec -it flask /bin/bash)
-
-[//]: # (root@<CONTAINER-ID>:/usr/src/app# python reset.py)
-
-[//]: # (...)
-
-[//]: # (root@<CONTAINER-ID>:/usr/src/app# exit)
-
-[//]: # (```)
-
 ### Browse to the application
 Open a web browser and go to the address: https://strikeapose.it. 
 If security warnings appear, ignore them and proceed to the website.
@@ -128,16 +110,6 @@ If security warnings appear, ignore them and proceed to the website.
 - ADD: a popup will appear, asking you to insert the name of the author name, artwork name, the category type (half bust or full length) and the image of the artwork. Clicking on Choose File you will be asked to select an image from your hard disk. The image must be a .jpg or .png file. Then click on Add Artwork to add it to the database. The image will be saved in the category's corresponding folder `back-end/static/assets/<category>` (e.g. `back-end/static/assets/halfBust` for half-length pose and `back-end/static/assets/fullLength` for full-length pose); 
 - DELETE: click on the button corresponding to the row of the artwork you want to delete. A popup will appear, asking you to confirm the deletion. Click on Delete to confirm the deletion. 
 
-[//]: # (## Turning on skeleton view)
-
-[//]: # (To show the skeleton &#40;for debugging or to ease the game, user tests show how much people appreciate it&#41; set the *DEBUG* variable to true in the file *back-end/static/js/scripts/config.js*)
-
-[//]: # ()
-[//]: # (```)
-
-[//]: # (static DEBUG = true;)
-
-[//]: # (```)
 
 ## Citation
 
