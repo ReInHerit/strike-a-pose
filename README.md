@@ -67,8 +67,8 @@ point to the server IP address), as in:
 **<SERVER_IP>** is the IP address of the computer where the containers are executed.
 
 #### Superuser generation
-We need a superuser to manage the database. To generate it:
-1) open `back-end/superuser` with your preferred IDE, find the following lines: 
+To efficiently manage the database, a superuser is initially required. Follow these steps for superuser generation:
+1) open `back-end/superuser.py` with your preferred Integrated Development Environment (IDE) and locate the following lines: 
 ```
 superuser = User(
         username='superadmin',
@@ -79,12 +79,18 @@ superuser = User(
     )
 superuser.set_password('superadminpassword')
 ```
-then substitute ___superadmin___, ___superadmin@example.com___ and ___superadminpassword___ with your desired username, email and password.
+Replace ___superadmin___, ___superadmin@example.com___ and ___superadminpassword___ with your desired username, email and password.
 
 2) in the console navigate to `back-end/` folder then use the following command:
 ```
 python superuser.py
 ```
+The superuser can:
+- add new artworks to the database;
+- delete artworks from the database;
+- accept new admin user registrations;
+- delete admin users.
+
 
 ### Docker setup
 
@@ -98,18 +104,59 @@ or to execute it in detach mode:
 ```
 docker compose up -d
 ```
-
 ### Browse to the application
 Open a web browser and go to the address: https://strikeapose.it. 
 If security warnings appear, ignore them and proceed to the website.
 
+### New Admin user generation
+You can also generate a new admin user by following these steps:
+1. Access the admin page by clicking on the ___ADMIN___ button located in the top-right corner of the screen. This action will redirect you to the admin page.
+2. Click on ___SignUp tab___ and fill the form with the requested field.
+3. A confirmation email will be sent to the email address provided. Click on the link in the email to confirm the registration.
+4. Next step is to wait for the superuser acceptance. Once the superuser has accepted the registration, you could log in with the credentials provided.
+An Admin user can:
+- add new artworks to the database;
+- delete artworks from the database.
+- 
 ### To change the artworks that are shown in the system, follow the following steps:
-1. click on the ___ADMIN___ button in the top left corner of the screen. You'll be redirected to the admin page;
-2. signin with the superuser credentials;
-3. now you can add, or delete the artworks in the database using the respective buttons:
-- ADD: a popup will appear, asking you to insert the name of the author name, artwork name, the category type (half bust or full length) and the image of the artwork. Clicking on Choose File you will be asked to select an image from your hard disk. The image must be a .jpg or .png file. Then click on Add Artwork to add it to the database. The image will be saved in the category's corresponding folder `back-end/static/assets/<category>` (e.g. `back-end/static/assets/halfBust` for half-length pose and `back-end/static/assets/fullLength` for full-length pose); 
-- DELETE: click on the button corresponding to the row of the artwork you want to delete. A popup will appear, asking you to confirm the deletion. Click on Delete to confirm the deletion. 
+1. Select the ___ADMIN___ button located in the top-right corner of the screen. This action will redirect you to the admin page.
+2. Log in with a superuser or admin credentials;
+3. You are now able to manage artworks in the database through the following options:
+   - ADD: 
+     - A pop-up will prompt you to input the author's name, artwork name, category type (half bust or full length), and upload an image of the artwork.
+     - Click on "Choose File" to select an image from your hard disk. Note that the image must be in either .jpg or .png format.
+     - Press "**Add Artwork**" to include it in the database.
+     - The image will be stored in the corresponding folder for the category, located at `back-end/static/assets/<category>` (e.g. `back-end/static/assets/halfBust` for half-length pose and `back-end/static/assets/fullLength` for full-length pose); 
+   - DELETE: 
+     - Click on the button associated with the row of the artwork you wish to delete.
+     - A pop-up will appear, seeking confirmation for the deletion.
+     - Click on "Delete" to confirm the deletion process.
+### How to play the game
+#### Accessing the Game:
 
+Visit http://strikeapose.it \
+Confirm the policy to proceed.
+#### Creating a Room:
+
+To initiate a game, create a room by selecting choices on the right of "ADD ROOM."
+Click on the "+" icon to add the room to the list.
+- Room Configuration:
+  - Choose between two game modes: Solo or Versus.
+  - Specify the number of artworks to include in the game.
+  - Select the game level: Half Bust or Full Body.
+  - For Versus mode, determine the number of rounds to play.
+#### Solo Game:
+- Commence the game by clicking on the room's "PLAY" icon. \
+- Respond to the poses in the displayed artworks. \
+- After successfully matching each pose, download the video of your performance.
+#### Versus Game:
+- Share the room ID with a friend and await their joining. \
+- The second player needs to insert the room ID in the ROOM ID field and click on the join icon. \
+- Once joined, the game starts automatically with the room creator initiating their round. \
+- Respond to the poses on the screen, and after the first player completes their round, the second player begins. \
+- The game continues until all rounds are completed. \
+- Upon game completion, both players will be directed to the final web page.
+- The winner is announced, and players can download the video of their performances.
 
 ## Citation
 
