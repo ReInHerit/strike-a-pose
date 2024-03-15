@@ -7,30 +7,18 @@ let timerInterval;
 // const detectorConfig = {modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING};
 // Utility Functions
 async function picture_ids_for_level(level) {
-    const picture_list = await getAllPictures();
-    console.log(picture_list)
-    let picture_ids = [];
-    let level_pictures_ids = [];
-    for (let i = 0; i < picture_list.length; i++) {
-        picture_ids.push(picture_list[i].id);
-    }
-    console.log(picture_ids)
-    for (let i = 0; i < picture_ids.length; i++) {
-        console.log(picture_ids[i]);
-        const id = picture_ids[i];
-        // const picture = picture_list[i];
-        //
-        // console.log(picture_list[i].category)
-        if (
-            (level.id === 1 && picture_list[i].category === 'halfBust') ||
-            (level.id === 2 && picture_list[i].category === 'fullLength') ||
-            (level.id === 3)
-        ) {
-            level_pictures_ids.push(id);
-        }
-    }
+    const pictures_data = await getAllPictures();
+    console.log(level,'///////////////')
+    const picture_list = pictures_data.picturesList;
+    // console.log(categories)
+    const level_pictures_ids = picture_list
+        .filter((picture) => no_upper_no_spaces(picture.category) === no_upper_no_spaces(level.name))
+        .map((picture) => picture.id);
     console.log(level_pictures_ids)
     return level_pictures_ids;
+}
+function no_upper_no_spaces(string) {
+    return string.replace(/\s+/g, '').toLowerCase();
 }
 function normalizeKPs(poses, width, height) {
     return (poses?.[0]?.keypoints || [])
@@ -45,7 +33,6 @@ function normalizeKPs(poses, width, height) {
 
 function createPoseDistanceFrom(keypointsA) {
     const [avgXA, avgYA] = keypointsA.reduce((sums, kpA) => [sums[0] + kpA.x, sums[1] + kpA.y], [0, 0]).map(sum => sum / keypointsA.length);
-
     return function(keypointsB) {
         const count = keypointsA.reduce((res, kpA) => (keypointsB.find(kpB => kpA.name === kpB.name) ? res + 1 : res), 0);
         if (count < keypointsA.length / 2) {
@@ -74,38 +61,7 @@ function createPoseCanvas(canvas) {
     canvas.width = Config.WIDTH;
     canvas.height = Config.HEIGHT;
     const ctx = canvas.getContext("2d");
-
-    function drawPoint({ x, y, r, color = "white" }) {
-        ctx.beginPath();
-        ctx.arc(x * canvas.width, y * canvas.width, r, 0, 2 * Math.PI);
-        ctx.fillStyle = color;
-        ctx.fill();
-    }
-
-    function drawSegment({ pointA, pointB, color = "white" }) {
-        if (pointA && pointB) {
-            ctx.beginPath();
-            ctx.moveTo(pointA.x * canvas.width, pointA.y * canvas.width);
-            ctx.lineTo(pointB.x * canvas.width, pointB.y * canvas.width);
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = color;
-            ctx.stroke();
-        }
-    }
-
-    return {
-        canvas,
-        drawPoint,
-        drawSegment,
-        drawImage: function(img) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.save();
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            ctx.restore();
-        },
-
-        drawSkeleton: function({ keypoints, color = "white" }) {
-            const adjacentKeyPoints = [
+    const adjacentKeyPoints = [
                 ["nose", "left_eye"],
                 ["nose", "right_eye"],
                 ["left_eye", "left_ear"],
@@ -123,7 +79,48 @@ function createPoseCanvas(canvas) {
                 ["right_hip", "right_knee"],
                 ["right_knee", "right_ankle"]
             ];
+    function drawPoint({ x, y, r, color = "white" }) {
+        ctx.beginPath();
+        ctx.arc(x * canvas.width, y * canvas.width, r, 0, 2 * Math.PI);
+        ctx.fillStyle = color;
+        ctx.fill();
+    }
 
+    function drawSegment({ pointA, pointB, color = "white" }) {
+        if (pointA && pointB) {
+            const lineWidth = 10; // Width of the white stroke
+            const colorLineWidth = 6; // Width of the colored stroke
+
+            // Draw the white stroke
+            ctx.beginPath();
+            ctx.moveTo(pointA.x * canvas.width, pointA.y * canvas.width);
+            ctx.lineTo(pointB.x * canvas.width, pointB.y * canvas.width);
+            ctx.lineWidth = lineWidth;
+            ctx.strokeStyle = "white";
+            ctx.stroke();
+
+            // Draw the colored stroke
+            ctx.beginPath();
+            ctx.moveTo(pointA.x * canvas.width, pointA.y * canvas.width);
+            ctx.lineTo(pointB.x * canvas.width, pointB.y * canvas.width);
+            ctx.lineWidth = colorLineWidth;
+            ctx.strokeStyle = color;
+            ctx.stroke();
+        }
+    }
+
+    return {
+        canvas,
+        drawPoint,
+        drawSegment,
+        drawImage: function(img) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            ctx.restore();
+        },
+
+        drawSkeleton: function({ keypoints, color = "blue" }) {
             keypoints.forEach(({ x, y }) => {
                 drawPoint({ x, y, r: 6 });
             });
@@ -135,6 +132,75 @@ function createPoseCanvas(canvas) {
                     color
                 });
             });
+        },
+        calculateAngles: function(used_names, normalized_keypoints) {
+            const angles_array = [];
+            const headKeyPoints = [
+                ["nose", "left_eye"],
+                ["nose", "right_eye"],
+                ["left_eye", "right_eye"],
+                ["left_ear", "left_eye"],
+                ["right_eye", "right_ear"]
+            ];
+            const upperBodyKeyPoints = [
+                ["left_shoulder", "left_elbow"],
+                ["right_shoulder", "right_elbow"],
+                ["left_wrist", "left_elbow"],
+                ["right_wrist", "right_elbow"],
+                ["right_shoulder", "left_shoulder"],
+                ["left_shoulder", "left_hip"],
+                ["right_shoulder", "right_hip"]
+            ];
+            const bottomBodyKeyPoints = [
+                ["left_hip", "left_knee"],
+                ["right_hip", "right_knee"],
+                ["left_hip", "right_hip"],
+                ["left_knee", "left_foot"],
+                ["right_knee", "right_foot"]
+            ];
+
+            const calculateOrientationAngle = (kp1, kp2) => {
+                const deltaY = kp2.y - kp1.y;
+                const deltaX = kp2.x - kp1.x;
+                let angleRad = Math.atan2(deltaY, deltaX);
+                let angleDeg = (angleRad * 180) / Math.PI;
+                angleDeg = Math.round((angleDeg + 360) % 360);
+                return angleDeg;
+            };
+
+            const getKeyPoints = (groupKeyPoints) => {
+                const keyPoints = [];
+                groupKeyPoints.forEach(([kp1, kp2]) => {
+                    if (used_names.includes(kp1) && used_names.includes(kp2)) {
+                        const index1 = used_names.indexOf(kp1);
+                        const index2 = used_names.indexOf(kp2);
+                        keyPoints.push([normalized_keypoints[index1], normalized_keypoints[index2]]);
+                    }
+                });
+                return keyPoints;
+            };
+
+            const headKeyPointsFiltered = getKeyPoints(headKeyPoints);
+            const upperBodyKeyPointsFiltered = getKeyPoints(upperBodyKeyPoints);
+            const bottomBodyKeyPointsFiltered = getKeyPoints(bottomBodyKeyPoints);
+
+            const calculateAngleFromKeyPoints = (keyPoints) => {
+                if (keyPoints) {
+                    const angles = [];
+                    keyPoints.forEach(([kp1, kp2]) => {
+                        const angleValue = calculateOrientationAngle(kp1, kp2);
+                        angles.push({ angle: angleValue, keypoints_names: kp1.name +' - ' +kp2.name });
+                    });
+                    return angles;
+                }
+            };
+
+            angles_array.push(...calculateAngleFromKeyPoints(headKeyPointsFiltered));
+            angles_array.push(...calculateAngleFromKeyPoints(upperBodyKeyPointsFiltered));
+            angles_array.push(...calculateAngleFromKeyPoints(bottomBodyKeyPointsFiltered));
+
+            console.log(angles_array);
+            return angles_array;
         }
     };
 }
@@ -150,18 +216,36 @@ async function createImage(src) {
 }
 
 function createPictureLoader(imgCanvas) {
-    console.log(imgCanvas)
     return async (id) => {
         const strongDetector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet, {
-            modelType: poseDetection.movenet.modelType.SINGLEPOSE_THUNDER
+            modelType: poseDetection.movenet.modelType.SINGLEPOSE_THUNDER,
         });
 
         const picture = await getPicture(id);
         $("#artwork_label").text(picture.artwork_name + " - " + picture.author_name);
         const img = await createImage(`${Config.SERVER_URL}${picture.path}`);
         const imagePoses = await strongDetector.estimatePoses(img);
+        console.log(imagePoses)
         const imageKPs = normalizeKPs(imagePoses, img.width, img.height);
+        // const flippedKPs = [...imageKPs]
+        // const flippedKPs_reverted = flippedKPs.map((kp) => {
+        //     console.log(kp)
+        //     const newName = kp.name.replace("left", "temp").replace("right", "left").replace("temp", "right");
+        //     return {
+        //         name: newName,
+        //         x: 1 - kp.x,
+        //         y: kp.y,
+        //         score: kp.score // You may need to copy other properties if necessary
+        //     };
+        // });
+        console.log(imageKPs, imageKPs) //flippedKPs_reverted)
         const imageKPNames = imageKPs.map((kp) => kp.name);
+
+        const image_angles= imgCanvas.calculateAngles(imageKPNames, imageKPs) //flippedKPs_reverted);
+        console.log(
+                "image_angles",
+                image_angles
+        )
         imgCanvas.drawImage(img);
 
         if (img.width > img.height) {
@@ -175,11 +259,12 @@ function createPictureLoader(imgCanvas) {
         if (Config.DEBUG) {
             imgCanvas.drawSkeleton({ keypoints: imageKPs });
         }
-        const distanceFromImg = createPoseDistanceFrom(imageKPs);
+        // const distanceFromImg = createPoseDistanceFrom(imageKPs);
 
         return {
             imageKPNames,
-            distanceFromImg
+            image_angles
+            // distanceFromImg
         };
     };
 }
@@ -266,45 +351,34 @@ const updateScoreAndCanvas = (computedDistancePercentage, camCanvas, video, filt
     }
 };
 
-const initGame = async (levelId, poses, video, camCanvas, imgCanvas) => {
+const initGame_solo = async (levelId, poses, video, camCanvas, imgCanvas) => {
     const level = await getLevel(levelId);
     const level_picture_ids = await picture_ids_for_level(level);
-    console.log(level.name, level.id, level_picture_ids, poses, levelId)
     let round = 0;
+    let userVideoList = [];
+
     const detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet);
     const pictureLoad = await createPictureLoader(imgCanvas);
-
-    let userVideoList = [];
     let idRandom = level_picture_ids.sort(() => Math.random() - 0.5);
 
     const nPictures = Math.min(idRandom.length, parseInt(poses));//Config.MAX_PICTURES_SOLO
 
+    const userId = localStorage.getItem("userId");
     const nextRound = async () => {
         const id = idRandom[round];
-        const userId = localStorage.getItem("userId");
-        const { imageKPNames, distanceFromImg } = await pictureLoad(id);
+        const { imageKPNames, image_angles } = await pictureLoad(id);
 
         const imgQueue = queueGenerator(Config.VIDEO_SECONDS * Config.FRAME_RATE);
 
         const gameLoop = setInterval(async () => {
             $("#game-loading").remove();
             $("#main").show();
-            const videoPoses = await detector.estimatePoses(video);
-            const videoKPs = normalizeKPs(videoPoses, video.width, video.height);
-            const filteredVideoKPs = videoKPs.filter((kp) => imageKPNames.includes(kp.name));
+            const computedDistance = await compute_match(detector, video, imageKPNames, image_angles, camCanvas)
 
-            const computedDistance = distanceFromImg(filteredVideoKPs);
-            // console.log("1 - computedDistance:", computedDistance, "/ Config.MATCH_LEVEL:", Config.MATCH_LEVEL, "* 100=",Math.min(99, ((1 - computedDistance) / Config.MATCH_LEVEL) * 100).toFixed(0));
-            const computedDistancePercentage = Math.min(100, ((1 - computedDistance) / Config.MATCH_LEVEL) * 100).toFixed(0);
-            // console.log("computedDistancePercentage", computedDistancePercentage);
-            updateScoreAndCanvas(computedDistancePercentage, camCanvas, video, filteredVideoKPs);
-            // console.log(1 - computedDistance, ">", Config.MATCH_LEVEL)
-            // console.log(1.1 - computedDistance, ">", Config.MATCH_LEVEL)
-            if (imgQueue.isFull() && 1.1 - computedDistance > Config.MATCH_LEVEL) {
+            if (imgQueue.isFull() && computedDistance >= Config.MATCH_LEVEL) {
                 clearInterval(gameLoop);
-                console.log("MATCH!");
                 round++;
-
+                console.log("MATCH!");
                 userVideoList.push({ id, frameList: imgQueue.queue });
                 imgQueue.clear();
                 if (round < nPictures) {
@@ -349,11 +423,8 @@ const initGame = async (levelId, poses, video, camCanvas, imgCanvas) => {
     return nextRound();
 };
 
-const initGame2 = async (socket, roomId, paintings_ids, poses, nRound, video, camCanvas, imgCanvas, user_id, player) => {
-    console.log("initGame2", roomId, paintings_ids, poses, nRound, video, camCanvas, imgCanvas, user_id, player)
+const initGame_versus = async (socket, roomId, paintings_ids, poses, nRound, video, camCanvas, imgCanvas, user_id, player) => {
     let first = true;
-    // player === 1 ? first = true : first = false;
-
     let round = 0;
     let pose = 0;
     let userVideoList = [];
@@ -362,35 +433,26 @@ const initGame2 = async (socket, roomId, paintings_ids, poses, nRound, video, ca
 
     const detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet);
     const pictureLoad = await createPictureLoader(imgCanvas);
-    alert("Round " + (round + 1) + " begins!");
-    console.log(round)
 
     const nextPose = async () => {
         const id = paintings_ids[pose];
-
-        const { imageKPNames, distanceFromImg } = await pictureLoad(id);
+        const { imageKPNames, image_angles } = await pictureLoad(id);
 
         const imgQueue = queueGenerator(Config.VIDEO_SECONDS * Config.FRAME_RATE);
 
         const gameLoop = setInterval(async () => {
             $("#game-loading").remove();
             $("#main").show();
+            const computedDistance = await compute_match(detector, video, imageKPNames, image_angles, camCanvas)
 
             let next = false;
-            const videoPoses = await detector.estimatePoses(video);
-            const videoKPs = normalizeKPs(videoPoses, video.width, video.height);
-            const filteredVideoKPs = videoKPs.filter((kp) => imageKPNames.includes(kp.name));
-
-            const computedDistance = distanceFromImg(filteredVideoKPs);
-            const computedDistancePercentage = Math.min(100, ((1 - computedDistance) / Config.MATCH_LEVEL) * 100).toFixed(0);
-            updateScoreAndCanvas(computedDistancePercentage, camCanvas, video, filteredVideoKPs);
 
             if (first) {
                 resetTimer();
                 startTimer();
                 first = false;
             }
-            if (imgQueue.isFull() && 1 - computedDistance > Config.MATCH_LEVEL) {
+            if (imgQueue.isFull() && computedDistance >= Config.MATCH_LEVEL) {
                 roundResults.pose++;
                 roundResults.time += stringTimeToSeconds(document.getElementById("timer").innerHTML);
                 next = true;
@@ -432,7 +494,7 @@ const initGame2 = async (socket, roomId, paintings_ids, poses, nRound, video, ca
                         socket.on("results_received", async (player) => {
                             // remove the message box from the page after the video is posted
                             messageBox.remove();
-                            console.log("Results received", roomId, player, player["player"], paintings_ids);
+                            // console.log("Results received", roomId, player, player["player"], paintings_ids);
                             localStorage.setItem("retired", "false");
 
                             location.href = `/end?id=${video.id}&player=${player["player"]}&user_id=${user_id}&roomId=${roomId}&paintings_ids=${paintings_ids}&poses=${poses}`;
@@ -463,9 +525,68 @@ const initGame2 = async (socket, roomId, paintings_ids, poses, nRound, video, ca
         startTimer();
         return gameLoop;
     };
-
     return nextPose();
 };
+
+async function compute_match(detector, video, imageKPNames, image_angles, camCanvas) {
+    const videoPoses = await detector.estimatePoses(video);
+    const videoKPs = normalizeKPs(videoPoses, video.width, video.height);
+    const videoKpsNames = videoKPs.map((kp) => kp.name);
+    // console.log(videoPoses, videoKPs)
+    const filteredVideoKPs = videoKPs.filter((kp) => imageKPNames.includes(kp.name));
+    const cam_angles = camCanvas.calculateAngles(videoKpsNames, videoKPs);
+    console.log(cam_angles, image_angles)
+    const distance = calculateDistance(image_angles, cam_angles);
+    console.log('distance', distance)
+    // const computedDistance = distanceFromImg(filteredVideoKPs);
+    // const computedDistancePercentage = Math.max(0, Math.min(100, (1 - distance / Config.MATCH_LEVEL) * 100)).toFixed(0);
+    // console.log('computedDistancePercentage:',computedDistancePercentage)
+    updateScoreAndCanvas(Math.round(distance), camCanvas, video, filteredVideoKPs);
+    return distance;
+}
+function calculateDistance(image_angles, cam_angles) {
+    let totalDistance = 0;
+    const maxPossibleDistance = 180 * image_angles.length;
+    // Iterate over each angle object in image_angles
+    image_angles.forEach((imageAngleObj) => {
+        const matchingCamAngleObj = cam_angles.find((camAngleObj) =>{
+            const [camKp1, camKp2] = camAngleObj.keypoints_names.split(' - ');
+            const [imgKp1, imgKp2] = imageAngleObj.keypoints_names.split(' - ');
+
+            // Check if keypoints are matched in both orders
+            return (
+                (camKp1 === imgKp1 && camKp2 === imgKp2) ||
+                (camKp1 === imgKp2 && camKp2 === imgKp1)
+            );
+        });
+
+        // Check if a matching angle object was found in cam_angles
+        if (matchingCamAngleObj) {
+            console.log("Matching angle object found for", imageAngleObj.keypoints_names)
+            // console.log(imageAngleObj.angle, matchingCamAngleObj.angle, imageAngleObj.angle - matchingCamAngleObj.angle)
+            // Calculate the squared difference in angle values
+            const minor = Math.min(imageAngleObj.angle, matchingCamAngleObj.angle);
+            const major = Math.max(imageAngleObj.angle, matchingCamAngleObj.angle);
+            // const angleDiffSquared = Math.pow(imageAngleObj.angle - matchingCamAngleObj.angle, 2);
+            const absoluteAngleDifference = Math.min(major - minor, 360 + minor-major)//Math.abs(Math.atan2(Math.sin(imageAngleObj.angle - matchingCamAngleObj.angle), Math.cos(imageAngleObj.angle - matchingCamAngleObj.angle)) * 180 / Math.PI);
+            console.log("absoluteAngleDifference", absoluteAngleDifference);
+            totalDistance += absoluteAngleDifference;
+        } else {
+            console.log("No matching angle object found for", imageAngleObj);
+            totalDistance += 180;
+            // Handle the case where a matching angle object was not found
+            // You may choose to assign a penalty or handle it differently based on your requirements
+            // For example, you could add a fixed value or the maximum possible difference to the total distance.
+        }
+    });
+    console.log(totalDistance)
+    const distance_percentage = 100 - (totalDistance / maxPossibleDistance) * 100;
+    // Calculate the square root of the total distance to get the Euclidean distance
+    console.log('//////////////////////',distance_percentage)
+    // const euclideanDistance = Math.sqrt(totalDistance);
+    return distance_percentage;
+}
+
 function createMessageBox() {
     // create the message box element
     const messageBox = document.createElement("div");
@@ -483,8 +604,8 @@ function createMessageBox() {
     return messageBox;
 }
 export {
-    initGame,
-    initGame2,
+    initGame_solo,
+    initGame_versus,
     createPoseCanvas,
     stringTimeToSeconds,
       picture_ids_for_level

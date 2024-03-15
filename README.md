@@ -23,11 +23,11 @@ In order to run this demo you need these software installed on your computer:
 - [Docker](https://docs.docker.com/get-docker/)
 - [Docker-compose](https://docs.docker.com/compose/install/)
 - Python 3.10 (or higher)
-#### email setup
+#### Email setup
 To send emails to the users, the system needs to be configured with a valid Gmail account. Then, you will need to generate an App Password by following the instructions provided in the first point on this link: https://www.interviewqs.com/blog/py-email.
 
 After generating the App Password, you will need to enter it, along with your email address, into a copy of the `back-end/.env_template` file. Additionally, make sure to remove the **_template** part of the file name, so the updated file should be named ___.env___. This configuration file, .env, will then be used by the application to authenticate with the email service.
-#### flask secret key setup
+#### Flask secret key setup
 To generate a secret key for the flask application, in a console navigate to strike-a-pose/back-end/static/utility/ then use the following command:
 ```
 python generate_secret_key.py
@@ -123,10 +123,14 @@ An Admin user can:
 2. Log in with a superuser or admin credentials;
 3. You are now able to manage artworks in the database through the following options:
    - ADD: 
-     - A pop-up will prompt you to input the author's name, artwork name, category type (half bust or full length), and upload an image of the artwork.
+     - A pop-up will prompt you to input the author's name, artwork name, description, category type and upload an image of the artwork.
      - Click on "Choose File" to select an image from your hard disk. Note that the image must be in either .jpg or .png format.
+     - In the description field, the text can be formatted to include links to further websites. This will be the text that will be sent via email to the users.
+     - As for the categories, it's possible to select an existing category or enter a new one by choosing "New Category" in the first selection window.
      - Press "**Add Artwork**" to include it in the database.
      - The image will be stored in the corresponding folder for the category, located at `back-end/static/assets/<category>` (e.g. `back-end/static/assets/halfBust` for half-length pose and `back-end/static/assets/fullLength` for full-length pose); 
+   - EDIT:
+     - you can edit the author's name, artwork name, category type, and description of the artwork clicking on the corresponding cell of the table. 
    - DELETE: 
      - Click on the button associated with the row of the artwork you wish to delete.
      - A pop-up will appear, seeking confirmation for the deletion.
@@ -138,23 +142,23 @@ Visit http://strikeapose.it \
 Confirm the policy to proceed.
 #### Creating a Room:
 
-To initiate a game, create a room by selecting choices on the right of "ADD ROOM."
+To start a game, create a room by selecting choices on the right of "ADD ROOM."
 Click on the "+" icon to add the room to the list.
 - Room Configuration:
-  - Choose between two game modes: Solo or Versus.
-  - Specify the number of artworks to include in the game.
-  - Select the game level: Half Bust or Full Body.
-  - For Versus mode, determine the number of rounds to play.
+  - MODE: Choose between two game modes: Solo or Versus.
+  - POSES: Specify the number of artworks to include in the game.
+  - LEVEL: Select the game level from one of those available.
+  - ROUNDS: For Versus mode only, determine the number of rounds to play.
 #### Solo Game:
-- Commence the game by clicking on the room's "PLAY" icon. \
-- Respond to the poses in the displayed artworks. \
+- Start the game by clicking on the room's "PLAY" icon. 
+- Try to match the poses in the displayed artworks. 
 - After successfully matching each pose, download the video of your performance.
 #### Versus Game:
-- Share the room ID with a friend and await their joining. \
-- The second player needs to insert the room ID in the ROOM ID field and click on the join icon. \
-- Once joined, the game starts automatically with the room creator initiating their round. \
-- Respond to the poses on the screen, and after the first player completes their round, the second player begins. \
-- The game continues until all rounds are completed. \
+- Share the ROOM ID with a friend, who can then join when ready. 
+- The second player needs to insert the room ID in the ROOM ID field and click on the join icon. 
+- After joining, the game automatically starts, with the room creator initiating the first round. 
+- Respond to the poses on the screen, and after the first player completes the round, the second player begins. 
+- The game continues until all rounds are completed. 
 - Upon game completion, both players will be directed to the final web page.
 - The winner is announced, and players can download the video of their performances.
 

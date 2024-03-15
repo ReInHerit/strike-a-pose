@@ -14,7 +14,7 @@ from flask import jsonify, request, render_template, redirect, url_for, session,
 from flask_login import login_required, current_user, LoginManager, login_user, logout_user
 from flask_socketio import join_room, leave_room, send, emit
 from flask_mail import Mail, Message
-from sqlalchemy import or_
+from sqlalchemy import or_, func
 from sqlalchemy.exc import IntegrityError
 # from flask_security import SQLAlchemyUserDatastore, Security, roles_required
 from werkzeug.utils import secure_filename
@@ -57,6 +57,7 @@ def superuser_required(view_func):
 
     return decorated_view
 
+
 @app.route("/", methods=["GET"])
 def index():
     session["end"] = False
@@ -75,16 +76,23 @@ def start():
     print('/////////////////////////////', user_id, '////////////////////////////////////////////////////////////')
     session["end"] = False
     session["game"] = True
+    form = CreateRoomForm()
+
+    form.set_level_choices()
+    form.process()
     try:
         room_id = session.pop("room_id")
         n_round = session.pop("n_round")
         n_pose = session.pop("n_pose")
+        print('/////////ROOM///////////', room_id, '/////',n_round, n_pose,'///////////////////////////////////////////////////')
     except:
-        return render_template("start.html", form=CreateRoomForm(), join_form=JoinRoomForm(), levels=Level.query.all(),
+        print('/////////NO ROOM///////////', '////////////////////////////////////////////////////////////')
+        return render_template("start.html", form=form, join_form=JoinRoomForm(), levels=Level.query.all(),
                                user_id=user_id)
-    form = CreateRoomForm()
+
     form.n_round.default = n_round
     form.n_pose.default = n_pose
+
     form.process()
 
     return render_template("start.html", form=form, join_form=JoinRoomForm(), levels=Level.query.all(), room=room_id,
@@ -273,7 +281,8 @@ def admin_register():
         if existing_user:
             print('existing_user', existing_user)
             if existing_user.username == username:
-                flash('Oops! It looks like that username is already in use. Please try another one to personalize your account.',
+                flash(
+                    'Oops! It looks like that username is already in use. Please try another one to personalize your account.',
                     'error')
                 select_signup_tab = False
             elif existing_user.email == email:
@@ -332,38 +341,55 @@ def confirm_email(token):
 @app.route('/admin_database_management', methods=['GET', 'POST'])
 @login_required
 def admin_database_management():
+    print('///////////////////////////ADMIN///////////////////////////', current_user.is_superuser)
     add_picture_form = AddPictureForm()
-    # remove_picture_form = RemovePictureForm()
     session['user_authenticated'] = True
     session['is_superuser'] = current_user.is_superuser
     users = User.query.filter_by(is_superuser=False).all()
+    existing_categories = Picture.query.with_entities(Picture.category).distinct().all()
+    add_picture_form.existing_category.choices = [(category, category) for category, in existing_categories]
+    category = ''
+    if request.method == 'POST' and add_picture_form.validate_on_submit():
+        print('in CATEGORY TYPE', add_picture_form.category_type.data)
+        category_type = add_picture_form.category_type.data
+        print('///////////////////////////ADMIN///////////////////////////', category_type)
+        if category_type == 'existing':
+            existing_category = add_picture_form.existing_category.data
+            category = existing_category
+        elif category_type == 'new':
+            new_category = add_picture_form.new_category.data.strip()
+            print('in NEW', new_category)
+            if not new_category:
+                print('Please enter a valid category.', 'error')
+                return redirect(url_for('admin_database_management'))
 
-    if add_picture_form.validate_on_submit():
+            existing_category = Picture.query.filter_by(category=new_category).first()
+            print('existing_category', existing_category)
+            if existing_category:
+                print('Category already exists.', 'error')
+                return redirect(url_for('admin_database_management'))
+
+            # Add the new category to the database
+            category = new_category.replace(' ', '_').lower()
+            new_level = Level(name=category)
+            db.session.add(new_level)
+            db.session.commit()
         if 'image' in request.files and allowed_file(request.files['image'].filename):
             file = request.files['image']
             filename = secure_filename(file.filename)
 
-            # Get the selected category from the form
-            category = add_picture_form.category.data
-            print('///////////////////////////ADMIN///////////////////////////', category)
-            # Define the destination folder based on the category
-            if category == 'fullLength':
-                destination_folder = 'fullLength'
-            elif category == 'halfBust':
-                destination_folder = 'halfBust'
-            else:
-                flash('Invalid category selected.', 'error')
-                return redirect(url_for('admin_database_management'))
-
+            destination_folder = os.path.join(app.config['UPLOAD_FOLDER'], category)
+            if destination_folder and not os.path.exists(destination_folder):
+                os.makedirs(destination_folder)
             # Save the file to the desired path
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], destination_folder, filename)
-            print('///////////////////////////ADMIN///////////////////////////', file_path)
+            file_path = os.path.join(destination_folder, filename)
             file.save(file_path)
             new_picture = Picture(
                 author_name=add_picture_form.author_name.data,
                 artwork_name=add_picture_form.artwork_name.data,
                 path=file_path,
                 category=category,
+                description=add_picture_form.description.data,
                 level_id=1,
             )
 
@@ -373,12 +399,14 @@ def admin_database_management():
             return redirect(url_for('admin_database_management'))
         else:
             flash('Invalid file format. Allowed formats: jpg, jpeg, png, gif', 'error')
-
+    else:
+        print('Form errors:', add_picture_form.errors)
     if request.method == 'POST':
         delete_picture_id = request.form.get('delete_picture_id')
         if delete_picture_id:
             picture_to_remove = Picture.query.get(delete_picture_id)
             if picture_to_remove:
+                category = picture_to_remove.category
                 path = picture_to_remove.path
                 if os.path.exists(path):
                     os.remove(path)
@@ -386,6 +414,14 @@ def admin_database_management():
                 db.session.commit()
 
                 flash('Picture removed successfully!', 'success')
+                remaining_pictures = Picture.query.filter_by(category=category).first()
+                if not remaining_pictures:
+                    # If no remaining pictures, remove the category from the Level model
+                    level_to_remove = Level.query.filter(func.lower(Level.name) == category.lower()).first()
+                    if level_to_remove:
+                        db.session.delete(level_to_remove)
+                        db.session.commit()
+                        flash(f'Category "{category}" removed from levels.', 'info')
                 return redirect(url_for('admin_database_management'))
             else:
                 flash('Picture not found.', 'error')
@@ -538,9 +574,12 @@ def get_picture(id):
 @app.route("/pictures/all/", methods=["GET"])
 def get_all_pictures():
     pictures = Picture.query.all()
-    print('///////////////////////////GET ALL PICTURES///////////////////////////', pictures)
-    return jsonify([picture.as_dict() for picture in pictures])
+    # existing_categories = Picture.query.with_entities(Picture.category).distinct().all()
+    # category_list = [category for category, in existing_categories]
+    pictures_list = [picture.as_dict() for picture in pictures]
+    picture_data = {'picturesList': pictures_list}
 
+    return jsonify(picture_data)
 
 @app.route("/levels/<id>", methods=["GET"])
 def get_level(id):
@@ -637,11 +676,15 @@ def send_video():
         for painting_id in paintings_ids[:nposes]:
             painting = Picture.query.get(painting_id)
             if painting:
-                paintings_info.append(painting.as_dict())
+                paintings_info.append({
+                    'author_name': painting.author_name,
+                    'artwork_name': painting.artwork_name,
+                    'description': painting.description
+                })
 
             # Add painting details to the email body
         paintings_info_str = '\n'.join(
-            [f"Painting {i + 1}: {info['author_name']} - {info['artwork_name']}" for i, info in
+            [f"Artwork {i + 1}: {info['author_name']} - {info['artwork_name']}: {info['description']}" for i, info in
              enumerate(paintings_info)])
         # Attach the video file
         video = request.files['video']
@@ -682,7 +725,36 @@ def send_video():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/update_picture', methods=['POST'])
+def update_picture():
+    try:
+        field = request.form.get('field')
+        picture_id = request.form.get('id')
+        new_value = request.form.get('value')
 
+        if not (field and picture_id and new_value):
+            return jsonify({'error': 'Incomplete data in the request.'}), 400
+
+        picture = Picture.query.get(int(picture_id))
+        if picture:
+            # Update the corresponding field based on the 'field' value
+            if field == 'author_name':
+                picture.author_name = new_value
+            elif field == 'artwork_name':
+                picture.artwork_name = new_value
+            elif field == 'description':
+                picture.description = new_value
+            elif field == 'category':
+                picture.category = new_value
+            else:
+                return jsonify({'error': 'Invalid field specified.'}), 400
+
+            db.session.commit()
+            return jsonify({'message': 'Picture updated successfully.'}), 200
+        else:
+            return jsonify({'error': 'Picture not found.'}), 404
+    except Exception as e:
+        return jsonify({'error': f'Error updating picture: {str(e)}'}), 500
 @app.route('/delete-video', methods=['DELETE'])
 def delete_video():
     print('/////////DELETE VIDEO///////////')
@@ -841,6 +913,7 @@ def on_end(room_id, player, winner):
         emit("endGame", "Successfully deleted room", to=my_room.id)
     else:
         send("This room doesn't exsits")
+
 
 # UTILITY FUNCTIONS
 def is_valid_email(email):

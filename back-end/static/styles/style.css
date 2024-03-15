@@ -8,6 +8,8 @@
 .btn-primary {
     background-color: #006d9b;
     border: none;
+    max-height: 40px;
+    font-size: 10px;
 }
 
 .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open > .dropdown-toggle.btn-primary {
@@ -139,7 +141,7 @@
     color: white;
 }
 #top button {
-    font-size: 25px;
+    font-size: 14px;
     margin-left: 0.5rem;
     padding: 10px;
     border-radius: 10px;
@@ -147,7 +149,7 @@
 @media (max-width: 480px) and (orientation: portrait) {
 
     #top button {
-        font-size: 1rem;
+        font-size: 0.75rem;
     }
 }
 #logo_start {
@@ -430,11 +432,13 @@ caption {
     font-size: 20px;
 }
 
-.div_end {
+.div_end, #privacyPopup  {
     padding: 20px;
     background-color: white;
     width: 50%;
+    min-width: 400px;
     max-width: 533.33px;
+
 }
 
 .div_index, .div_signup {

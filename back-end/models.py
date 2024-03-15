@@ -1,4 +1,6 @@
 from flask_login import UserMixin
+from sqlalchemy import Text
+
 from app import db, bcrypt
 
 
@@ -51,12 +53,20 @@ class Picture(db.Model):
     author_name = db.Column(db.String(255), nullable=False)
     artwork_name = db.Column(db.String(255), nullable=False)
     path = db.Column(db.String(255), nullable=False)
+    description = db.Column(Text(length=500))
     category = db.Column(db.String(50), nullable=False)  # Add category field
     level_id = db.Column(db.Integer, db.ForeignKey('level.id'),
                          nullable=False)
 
     def as_dict(self):
-        return {"id": self.id, "path": self.path, "author_name": self.author_name, "artwork_name": self.artwork_name, "category": self.category}
+        return {
+            "id": self.id,
+            "path": self.path,
+            "author_name": self.author_name,
+            "artwork_name": self.artwork_name,
+            "category": self.category,
+            "description": self.description,  # Include description in the dictionary
+        }
 
 
 class Video(db.Model):

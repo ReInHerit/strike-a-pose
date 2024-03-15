@@ -13,9 +13,11 @@ html, body {
 #admin_container {
     display: flex;
     flex-direction: column;
-    /*height: 100vh;*/
+    width: 100vw;
 }
-
+#form_container{
+    width: 100%;
+}
 .wrapper {
     display: flex;
     height: 100%;
@@ -27,7 +29,7 @@ html, body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 80%;
+    width: 90%;
     height: 100%;
     margin: 2% 0;
     background-color: #ffffff;
@@ -53,13 +55,16 @@ html, body {
     --bs-btn-border-color: #FF5733;
 }
 
-.btn-primary {
+.btn-primary, .btn-secondary {
     background-color: #006d9b;
     border: none;
     cursor: pointer;
     color: #ffffff;
+    font-size: 14px;
 }
-
+.btn-secondary {
+    background-color: #6c757d;
+}
 #adminButton {
     position: relative;
     height: fit-content;
@@ -74,7 +79,10 @@ html, body {
 #admin_header, #database-title-row, #pictures-table, #accept-title, #registration-table {
     width: 95%;
 }
-
+#category, #existingCategoriesDropdown, #newCategoryInput, #image {
+    padding: 3px;
+    margin-left: 10px;
+}
 /*SIGNIN SIGNUP*/
 #formContent {
     -webkit-border-radius: 10px 10px 10px 10px;
@@ -118,18 +126,60 @@ html, body {
 tr {
     vertical-align: baseline;
 }
-
-table tbody tr td:nth-child(2) {
+table {
+    font-size: calc(8px + 0.5vw);
     text-align: center;
+    overflow-wrap: break-word;
+}
+.table>:not(caption)>*>* {
+    padding: .2rem .2rem;
+}
+#pictures-table th:nth-child(1), #pictures-table td:nth-child(1){
+    max-width: 4vw;
+    width: 4vw;
 }
 
-table tbody tr td:nth-child(2) img {
+#pictures-table th:nth-child(2), #pictures-table td:nth-child(2),
+#pictures-table th:nth-child(6),#pictures-table td:nth-child(6),
+#pictures-table th:nth-child(7), #pictures-table td:nth-child(7)
+#registration-table td:nth-child(2), #registration-table th:nth-child(2),
+#registration-table td:nth-child(4), #registration-table th:nth-child(4),
+#registration-table td:nth-child(5), #registration-table th:nth-child(5)
+{
+    max-width: 12vw;
+    width: 12vw;
+}
+#registration-table td:nth-child(1){
+    max-width: 4vw;
+    width: 4vw;
+}
+#pictures-table th:nth-child(5), #pictures-table td:nth-child(5) {
+    max-width: 28vw;
+    width: 28vw;
+}
+#pictures-table th:nth-child(3),#pictures-table td:nth-child(3),
+#pictures-table th:nth-child(4), #pictures-tabletd:nth-child(4) {
+    max-width: 12vw;
+    width: 12vw;
+}
+#pictures-table td:nth-child(2) img {
     display: inline-block;
-    max-width: 50px;
-    max-height: 35px
+    max-width: 4vw;
+    width: 25vw;
+    max-height: 7vw;
 }
+#pictures-table th:nth-child(7) button, #pictures-table td:nth-child(7) button,
+#registration-table td:nth-child(6) button, #registration-table td:nth-child(7) button
+{
+    padding: 0.5vw 0.5vw;
+    width: 90%;
+    font-size: calc(8px + 0.5vw);
+}
+#pictures-table th:nth-child(7) button {
+    background-color: #198754;
 
-table tbody tr td:nth-child(6) button {
+}
+#pictures-table td:nth-child(7) button, #registration-table td:nth-child(6) button {
     color: black;
     background-color: #f6f6f6;
 }
@@ -159,6 +209,37 @@ table tbody tr td:nth-child(6) button {
     justify-content: space-between;
     width: 90%;
     padding: 20px 0;
+    flex-direction: column;
+}
+#image_div {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+}
+#newCategoryInput{
+    max-height: 28px;
+    margin: 0px 10px;
+    width: 90%;
+}
+#existingCategoriesDropdown {
+    width: 100%;
+}
+#category_div {
+    padding: 20px 0;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+}
+#description-editor {
+    margin: 0 10px 0;
+    height: 150px;
+}
+.ql-toolbar, .ql-container {
+    width: 90%;
+
+}
+.ql-toolbar {
+    padding: 10px 8px 0 8px;
 }
 /* TABS */
 a {
