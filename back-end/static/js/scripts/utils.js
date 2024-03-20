@@ -4,11 +4,9 @@ import { getLevel, getPicture, getAllPictures, postVideo } from "./fetchUtils.js
 let startTime;
 let elapsedTime = 0;
 let timerInterval;
-// const detectorConfig = {modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING};
 // Utility Functions
 async function picture_ids_for_level(level) {
     const pictures_data = await getAllPictures();
-    console.log(level,'///////////////')
     const picture_list = pictures_data.picturesList;
     // console.log(categories)
     const level_pictures_ids = picture_list
@@ -31,31 +29,6 @@ function normalizeKPs(poses, width, height) {
           }));
 }
 
-function createPoseDistanceFrom(keypointsA) {
-    const [avgXA, avgYA] = keypointsA.reduce((sums, kpA) => [sums[0] + kpA.x, sums[1] + kpA.y], [0, 0]).map(sum => sum / keypointsA.length);
-    return function(keypointsB) {
-        const count = keypointsA.reduce((res, kpA) => (keypointsB.find(kpB => kpA.name === kpB.name) ? res + 1 : res), 0);
-        if (count < keypointsA.length / 2) {
-            return 1;
-        }
-        const [avgXB, avgYB] = keypointsB.reduce((sums, kpB) => [sums[0] + kpB.x, sums[1] + kpB.y], [0, 0]).map(sum => sum / keypointsB.length);
-
-        return Math.sqrt(
-              keypointsA.reduce((res, kpA) => {
-                  const kpB = keypointsB.find(kpB => kpA.name === kpB.name);
-                  if (!kpB) {
-                      return res + 1;
-                  }
-                  const relativeDistanceXA = kpA.x - avgXA;
-                  const relativeDistanceXB = kpB.x - avgXB;
-                  const relativeDistanceYA = kpA.y - avgYA;
-                  const relativeDistanceYB = kpB.y - avgYB;
-                  const spaceDistance = Math.sqrt(Math.pow(relativeDistanceXA - relativeDistanceXB, 2) + Math.pow(relativeDistanceYA - relativeDistanceYB, 2));
-                  return res + spaceDistance;
-              }, 0) / keypointsA.length
-        );
-    };
-}
 
 function createPoseCanvas(canvas) {
     canvas.width = Config.WIDTH;
@@ -199,20 +172,22 @@ function createPoseCanvas(canvas) {
             angles_array.push(...calculateAngleFromKeyPoints(upperBodyKeyPointsFiltered));
             angles_array.push(...calculateAngleFromKeyPoints(bottomBodyKeyPointsFiltered));
 
-            console.log(angles_array);
             return angles_array;
         }
     };
 }
 
 async function createImage(src) {
-    return new Promise((resolve, reject) => {
+    try {
         const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = reject;
         img.crossOrigin = "anonymous";
         img.src = src;
-    });
+        await img.decode();
+        return img;
+    } catch (error) {
+        console.error("Error loading image:", error);
+        throw error;
+    }
 }
 
 function createPictureLoader(imgCanvas) {
@@ -225,46 +200,22 @@ function createPictureLoader(imgCanvas) {
         $("#artwork_label").text(picture.artwork_name + " - " + picture.author_name);
         const img = await createImage(`${Config.SERVER_URL}${picture.path}`);
         const imagePoses = await strongDetector.estimatePoses(img);
-        console.log(imagePoses)
+
         const imageKPs = normalizeKPs(imagePoses, img.width, img.height);
-        // const flippedKPs = [...imageKPs]
-        // const flippedKPs_reverted = flippedKPs.map((kp) => {
-        //     console.log(kp)
-        //     const newName = kp.name.replace("left", "temp").replace("right", "left").replace("temp", "right");
-        //     return {
-        //         name: newName,
-        //         x: 1 - kp.x,
-        //         y: kp.y,
-        //         score: kp.score // You may need to copy other properties if necessary
-        //     };
-        // });
-        console.log(imageKPs, imageKPs) //flippedKPs_reverted)
+
         const imageKPNames = imageKPs.map((kp) => kp.name);
 
         const image_angles= imgCanvas.calculateAngles(imageKPNames, imageKPs) //flippedKPs_reverted);
-        console.log(
-                "image_angles",
-                image_angles
-        )
+
         imgCanvas.drawImage(img);
-
-        if (img.width > img.height) {
-            const aspRatio = img.width / img.height;
-            $("#imgCanvas").first().css("transform", "scale(1," + 1 / aspRatio + ")");
-        } else {
-            const aspRatio = img.height / img.width;
-            $("#imgCanvas").first().css("transform", "scale(" + 1 / aspRatio + ",1)");
-        }
-
+        adjustCanvasAspectRatio(imgCanvas.canvas, img);
         if (Config.DEBUG) {
-            imgCanvas.drawSkeleton({ keypoints: imageKPs });
+            drawImageAndSkeleton(imgCanvas, img, imageKPs);
         }
-        // const distanceFromImg = createPoseDistanceFrom(imageKPs);
 
         return {
             imageKPNames,
             image_angles
-            // distanceFromImg
         };
     };
 }
@@ -333,25 +284,77 @@ function queueGenerator(size) {
 }
 
 const updateScoreAndCanvas = (computedDistancePercentage, camCanvas, video, filteredVideoKPs) => {
+    const window_dimensions = check_window_dimensions();
+    const maxWidth = window_dimensions.width;
+    const maxHeight = window_dimensions.height;
+    const windowAspectRatio = maxWidth / maxHeight;
     const $score = $("#score");
-    $score.width(`${computedDistancePercentage}%`);
+    const $progress = $(".progress");
+    const $score_container = $("#score_container");
+    const scoreHeight = windowAspectRatio > 1 ? `${computedDistancePercentage}%` : "100%";
+    const scoreWidth = windowAspectRatio > 1 ? "100%" : `${computedDistancePercentage}%`;
+    const progressHeight = windowAspectRatio > 1 ? "100%" : "80%";
+    const progressWidth = windowAspectRatio > 1 ? "80%" : "100%";
+    const scoreContainerWidth = windowAspectRatio > 1 ? "6%" : "100%";
+    const scoreContainerHeight = windowAspectRatio > 1 ? "100%" : "6%";
+
+    $score.height(scoreHeight).width(scoreWidth);
+    $progress.css({ "height": progressHeight, "width": progressWidth, "margin": "auto" });
+    $score_container.css({ "height": scoreContainerHeight, "width": scoreContainerWidth });
+
     $score.text(`${computedDistancePercentage}%`);
     camCanvas.drawImage(video);
 
-    if (video.width > video.height) {
-        const aspRatio = video.width / video.height;
-        $("#camCanvas").first().css("transform", "scale(1," + 1 / aspRatio + ")");
-    } else {
-        const aspRatio = video.height / video.width;
-        $("#camCanvas").first().css("transform", "scale(" + 1 / aspRatio + ",1)");
-    }
-
+    adjustCanvasAspectRatio(camCanvas.canvas, video);
     if (Config.DEBUG) {
-        camCanvas.drawSkeleton({ keypoints: filteredVideoKPs });
+        drawImageAndSkeleton(camCanvas, video, filteredVideoKPs);
     }
 };
-
-const initGame_solo = async (levelId, poses, video, camCanvas, imgCanvas) => {
+function adjustCanvasAspectRatio(canvas, source) {
+    const window_dimensions = check_window_dimensions();
+    const maxWidth = window_dimensions.width;
+    const maxHeight = window_dimensions.height;
+    const windowAspectRatio = maxWidth / maxHeight;
+    const $main = $("#main");
+    const $canvas = $(canvas);
+    const $container = $('.canvas-container')
+    const source_width = source.width;
+    const source_height = source.height;
+    const aspectRatio = source_width / source_height;
+    console.log(maxWidth, maxHeight)
+    let width, height;
+    if (windowAspectRatio > 1) {
+        $main.css({ "flex-direction": "row", "align-items": "center", "width": "100%", "height": "80%" });
+        $container.css({ "width": "47%", "height": "100%" });
+        width = $main.width() * 0.47;
+        height = $main.height();
+    } else {
+        $main.css({ "flex-direction": "column", "width": "95%", "height": "95%" });
+        $container.css({ "width": "100%", "height": "47%" });
+        width = $main.width();
+        height = $main.height() * 0.47;
+    }
+    adjustCanvasDimensions($canvas, aspectRatio, width, height);
+}
+function adjustCanvasDimensions($canvas, aspectRatio, width, height) {
+    if (aspectRatio > 1) {
+        const newWidth = width;
+        const newHeight = newWidth / aspectRatio;
+        $canvas.css({ "width": newWidth, "height": newHeight });
+    } else {
+        const newHeight = height;
+        const newWidth = newHeight * aspectRatio;
+        $canvas.css({ "width": newWidth, "height": newHeight });
+    }
+}
+function drawImageAndSkeleton(canvas, source, keypoints) {
+    const $canvas = $(canvas);
+    canvas.drawImage(source);
+    if (Config.DEBUG) {
+        canvas.drawSkeleton({ keypoints });
+    }
+}
+const initGame_solo = async (levelId, poses, video, camCanvas, imgCanvas, user_id) => {
     const level = await getLevel(levelId);
     const level_picture_ids = await picture_ids_for_level(level);
     let round = 0;
@@ -363,7 +366,7 @@ const initGame_solo = async (levelId, poses, video, camCanvas, imgCanvas) => {
 
     const nPictures = Math.min(idRandom.length, parseInt(poses));//Config.MAX_PICTURES_SOLO
 
-    const userId = localStorage.getItem("userId");
+    const userId = user_id//localStorage.getItem("userId");
     const nextRound = async () => {
         const id = idRandom[round];
         const { imageKPNames, image_angles } = await pictureLoad(id);
@@ -423,7 +426,7 @@ const initGame_solo = async (levelId, poses, video, camCanvas, imgCanvas) => {
     return nextRound();
 };
 
-const initGame_versus = async (socket, roomId, paintings_ids, poses, nRound, video, camCanvas, imgCanvas, user_id, player) => {
+const initGame_versus = async (socket, roomId, paintings_ids, poses, nRound, video, camCanvas, imgCanvas, user_id) => {
     let first = true;
     let round = 0;
     let pose = 0;
@@ -532,15 +535,9 @@ async function compute_match(detector, video, imageKPNames, image_angles, camCan
     const videoPoses = await detector.estimatePoses(video);
     const videoKPs = normalizeKPs(videoPoses, video.width, video.height);
     const videoKpsNames = videoKPs.map((kp) => kp.name);
-    // console.log(videoPoses, videoKPs)
     const filteredVideoKPs = videoKPs.filter((kp) => imageKPNames.includes(kp.name));
     const cam_angles = camCanvas.calculateAngles(videoKpsNames, videoKPs);
-    console.log(cam_angles, image_angles)
     const distance = calculateDistance(image_angles, cam_angles);
-    console.log('distance', distance)
-    // const computedDistance = distanceFromImg(filteredVideoKPs);
-    // const computedDistancePercentage = Math.max(0, Math.min(100, (1 - distance / Config.MATCH_LEVEL) * 100)).toFixed(0);
-    // console.log('computedDistancePercentage:',computedDistancePercentage)
     updateScoreAndCanvas(Math.round(distance), camCanvas, video, filteredVideoKPs);
     return distance;
 }
@@ -552,39 +549,34 @@ function calculateDistance(image_angles, cam_angles) {
         const matchingCamAngleObj = cam_angles.find((camAngleObj) =>{
             const [camKp1, camKp2] = camAngleObj.keypoints_names.split(' - ');
             const [imgKp1, imgKp2] = imageAngleObj.keypoints_names.split(' - ');
-
             // Check if keypoints are matched in both orders
             return (
                 (camKp1 === imgKp1 && camKp2 === imgKp2) ||
                 (camKp1 === imgKp2 && camKp2 === imgKp1)
             );
         });
-
         // Check if a matching angle object was found in cam_angles
         if (matchingCamAngleObj) {
-            console.log("Matching angle object found for", imageAngleObj.keypoints_names)
-            // console.log(imageAngleObj.angle, matchingCamAngleObj.angle, imageAngleObj.angle - matchingCamAngleObj.angle)
-            // Calculate the squared difference in angle values
             const minor = Math.min(imageAngleObj.angle, matchingCamAngleObj.angle);
             const major = Math.max(imageAngleObj.angle, matchingCamAngleObj.angle);
-            // const angleDiffSquared = Math.pow(imageAngleObj.angle - matchingCamAngleObj.angle, 2);
-            const absoluteAngleDifference = Math.min(major - minor, 360 + minor-major)//Math.abs(Math.atan2(Math.sin(imageAngleObj.angle - matchingCamAngleObj.angle), Math.cos(imageAngleObj.angle - matchingCamAngleObj.angle)) * 180 / Math.PI);
-            console.log("absoluteAngleDifference", absoluteAngleDifference);
+            const absoluteAngleDifference = Math.min(major - minor, 360 + minor-major)
             totalDistance += absoluteAngleDifference;
         } else {
-            console.log("No matching angle object found for", imageAngleObj);
             totalDistance += 180;
-            // Handle the case where a matching angle object was not found
-            // You may choose to assign a penalty or handle it differently based on your requirements
-            // For example, you could add a fixed value or the maximum possible difference to the total distance.
         }
     });
-    console.log(totalDistance)
+    // console.log(totalDistance)
     const distance_percentage = 100 - (totalDistance / maxPossibleDistance) * 100;
-    // Calculate the square root of the total distance to get the Euclidean distance
-    console.log('//////////////////////',distance_percentage)
-    // const euclideanDistance = Math.sqrt(totalDistance);
     return distance_percentage;
+}
+
+function check_window_dimensions() {
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    return {
+        width: windowWidth,
+        height: windowHeight
+    };
 }
 
 function createMessageBox() {

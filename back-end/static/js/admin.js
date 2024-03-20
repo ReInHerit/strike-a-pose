@@ -204,31 +204,62 @@ document.addEventListener("DOMContentLoaded", function() {
         var id = $(this).data("id");
         console.log("Field:", field, "ID:", id);
         // Check if the field is the description
+        // if (field === "description") {
+        //     // Get the current content of the cell
+        //     var currentContent = $(this).find(".quill-container").html();
+        //
+        //     // Initialize Quill in a modal with the current content
+        //     initializeQuillInModal(currentContent, function (newContent) {
+        //         // Update the cell content with the new Quill content
+        //         console.log("New content:", newContent);
+        //         const tempDiv = document.createElement('div');
+        //         tempDiv.innerHTML = newContent;
+        //         const textContentWithoutTags = tempDiv.textContent || tempDiv.innerText;
+        //
+        //         // Update the cell content with the extracted text
+        //         $editableCell.find(".quill-container").html(textContentWithoutTags);
+        //
+        //         // Remove the temporary div from the document
+        //         if (tempDiv.parentNode) {
+        //             tempDiv.parentNode.removeChild(tempDiv);
+        //         }
+        //
+        //         // Send the updated value to the server (you need to implement the server-side logic)
+        //         var formData = new FormData();
+        //         formData.append('field', field);
+        //         formData.append('id', id);
+        //         formData.append('value', textContentWithoutTags);
+        //
+        //         fetch("/update_picture", {
+        //             method: "POST",
+        //             body: formData
+        //         })
+        //         .then(response => {
+        //             if (!response.ok) {
+        //                 throw new Error("Network response was not ok");
+        //             }
+        //             return response.json(); // or response.text() if expecting a different response type
+        //         })
+        //         .then(data => {
+        //             // Handle the server response if needed
+        //         })
+        //         .catch(error => {
+        //             console.error("Error during fetch:", error);
+        //         });
+        //     });
+        // }
         if (field === "description") {
-            // Get the current content of the cell
             var currentContent = $(this).find(".quill-container").html();
 
-            // Initialize Quill in a modal with the current content
             initializeQuillInModal(currentContent, function (newContent) {
                 // Update the cell content with the new Quill content
                 console.log("New content:", newContent);
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = newContent;
-                const textContentWithoutTags = tempDiv.textContent || tempDiv.innerText;
-
-                // Update the cell content with the extracted text
-                $editableCell.find(".quill-container").html(textContentWithoutTags);
-
-                // Remove the temporary div from the document
-                if (tempDiv.parentNode) {
-                    tempDiv.parentNode.removeChild(tempDiv);
-                }
-
-                // Send the updated value to the server (you need to implement the server-side logic)
+                $editableCell.find(".quill-container").html(newContent);
+                // Send the updated value to the server without extracting text
                 var formData = new FormData();
                 formData.append('field', field);
                 formData.append('id', id);
-                formData.append('value', textContentWithoutTags);
+                formData.append('value', newContent); // Send HTML content as is
 
                 fetch("/update_picture", {
                     method: "POST",
@@ -238,7 +269,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     if (!response.ok) {
                         throw new Error("Network response was not ok");
                     }
-                    return response.json(); // or response.text() if expecting a different response type
+                    return response.json();
                 })
                 .then(data => {
                     // Handle the server response if needed
@@ -247,7 +278,8 @@ document.addEventListener("DOMContentLoaded", function() {
                     console.error("Error during fetch:", error);
                 });
             });
-        } else {
+        }
+        else {
             // For other fields (non-rich text), proceed as before
             var currentValue = $(this).text();
             var inputField = $("<input type=\"text\" class=\"form-control\" value=\"" + currentValue + "\">");

@@ -5,7 +5,7 @@ WORKDIR /usr/src/app
 COPY requirements.txt  ./
 
 RUN apt update
-RUN apt install ffmpeg libsm6 libxext6  -y
+RUN apt install ffmpeg libsm6 libxext6 python3-bs4  -y
 RUN pip install --no-cache-dir -r requirements.txt
 
 

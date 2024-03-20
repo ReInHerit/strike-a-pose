@@ -1,4 +1,6 @@
+import html
 import random
+import re
 import secrets
 import string
 import time
@@ -9,8 +11,10 @@ import numpy as np
 import uuid
 import os
 from random import randrange
+
+# from beautifulsoup4 import BeautifulSoup
 from flask import jsonify, request, render_template, redirect, url_for, session, g, make_response, flash, abort, \
-    get_flashed_messages
+    get_flashed_messages, render_template_string
 from flask_login import login_required, current_user, LoginManager, login_user, logout_user
 from flask_socketio import join_room, leave_room, send, emit
 from flask_mail import Mail, Message
@@ -672,20 +676,28 @@ def send_video():
         user_email = request.form.get('email')
         nposes = int(request.form.get('poses'))
         paintings_ids = [int(p_id) for p_id in request.form.get('paintings_ids').split(',')]
+        print('////////////////////////////////////////////////////', user_email, nposes, paintings_ids)
         paintings_info = []
         for painting_id in paintings_ids[:nposes]:
+
             painting = Picture.query.get(painting_id)
             if painting:
+                print('////////////////////////////////////////////////////', painting.author_name, painting.artwork_name)
+                sanitized_description = sanitize_html_text(painting.description)
+                sanitized_author_name = sanitize_html_text(painting.author_name)
+                sanitized_artwork_name = sanitize_html_text(painting.artwork_name)
+                # description = html.escape(sanitized_text)
                 paintings_info.append({
-                    'author_name': painting.author_name,
-                    'artwork_name': painting.artwork_name,
-                    'description': painting.description
+                    'author_name': sanitized_author_name,
+                    'artwork_name': sanitized_artwork_name,
+                    'description': sanitized_description
                 })
 
             # Add painting details to the email body
         paintings_info_str = '\n'.join(
-            [f"Artwork {i + 1}: {info['author_name']} - {info['artwork_name']}: {info['description']}" for i, info in
+            [f"Artwork {i + 1}: {info['author_name']} - {info['artwork_name']}: {info['description']}<br/>" for i, info in
              enumerate(paintings_info)])
+        print('////////////////////////////////////////////////////', paintings_info_str)
         # Attach the video file
         video = request.files['video']
         video_data = video.read()
@@ -694,28 +706,49 @@ def send_video():
         smtp_port = 587
         smtp_username = os.getenv('SMTP_USERNAME')
         smtp_password = os.getenv('SMTP_PASSWORD')
+        print('////////////////////////////////////////////////////', smtp_username, smtp_password)
         # Create a message object
         msg = MIMEMultipart()
         msg['From'] = os.getenv('SMTP_USERNAME')
         msg['To'] = user_email
         msg['Subject'] = 'Your Strike-a-pose Video'
+        print('////////////////////////////////////////////////////', user_email, msg['To'])
         # Add a body to the email (optional)
-        body = f'\n\nDear User,\n\nThank you for participating in this engagement experience with art. We are delighted to share with you the video capturing your graceful poses inspired by some of the masterpieces in our collection. Your interaction can inspire you for a deeper exploration of the following artworks:\n\n{paintings_info_str}\n\nFeel free to enjoy and share your experience in your social media.\n\nBest regards,\nThe ReInHerit Consortium'
-
-        msg.attach(MIMEText(body, 'plain'))
+        # body = f'\n\nDear User,\n\nThank you for participating in this engagement experience with art. We are delighted to share with you the video capturing your graceful poses inspired by some of the masterpieces in our collection. Your interaction can inspire you for a deeper exploration of the following artworks:\n\n{paintings_info_str}\n\nFeel free to enjoy and share your experience in your social media.\n\nBest regards,\nThe ReInHerit Consortium'
+        body = f"""
+                <html>
+                <body>
+                    <p>Dear User,</p>
+                    <p>Thank you for participating in this engagement experience with art.</p>
+                    <p>We are delighted to share with you the video capturing your graceful poses inspired by some of the masterpieces in our collection.</p>
+                    <p>Your interaction can inspire you for a deeper exploration of the following artworks:</p>
+                    {paintings_info_str}
+                    <p>Feel free to enjoy and share your experience in your social media.</p>
+                    <p>Best regards,<br/>The ReInHerit Consortium</p>
+                </body>
+                </html>
+                """
+        print('////////////////////////////////////////////////////')
+        msg.attach(MIMEText(body, 'html', 'utf-8'))
+        print('//////////body attached//////////')
         # Attach the video file
         video_attachment = MIMEApplication(video_data, Name='video.mp4')  # Set the desired filename
         video_attachment['Content-Disposition'] = 'attachment; filename="strike-a-pose-video.mp4"'
         msg.attach(video_attachment)
+        print('//////////video attached//////////')
         # Create an SMTP session
         smtp = smtplib.SMTP(smtp_server, smtp_port)
         smtp.starttls()
-        smtp.set_debuglevel(1)
+        smtp.set_debuglevel(2)
+        print('//////////smtp session created//////////')
         smtp.login(smtp_username, smtp_password)
-
+        print('//////////smtp session login//////////')
         # Send the email
-        smtp.sendmail(msg['From'], user_email, msg.as_string())
-
+        try:
+            smtp.sendmail(msg['From'], user_email, msg.as_string())
+            print('//////////email sent//////////')
+        except Exception as e:
+            print('//////////email not sent//////////', str(e))
         # Close the SMTP session
         smtp.quit()
         print('///////////////////////////SEND VIDEO///////////////////////////', user_email, nposes, paintings_ids)
@@ -724,6 +757,21 @@ def send_video():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+
+def sanitize_html_text(text):
+    if ('<p>' in text) and ('</p>' in text):
+        text = text.replace('<p>', '').replace('</p>', '')
+    # Remove right and left double quotes
+    text = re.sub(r'[“”]', '"', text)
+    # Remove right and left single quotes
+    text = re.sub(r'[‘’]', "'", text)
+    # Remove other non-allowed characters
+    replaced_description = ''.join(f"&#{ord(c)};" if ord(c) > 127 else c for c in text)
+
+    # text = re.sub(r'[^\w\s.,!?]', '', text)
+    return replaced_description
 
 @app.route('/update_picture', methods=['POST'])
 def update_picture():
@@ -734,7 +782,6 @@ def update_picture():
 
         if not (field and picture_id and new_value):
             return jsonify({'error': 'Incomplete data in the request.'}), 400
-
         picture = Picture.query.get(int(picture_id))
         if picture:
             # Update the corresponding field based on the 'field' value

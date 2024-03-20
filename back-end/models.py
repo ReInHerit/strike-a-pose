@@ -53,7 +53,7 @@ class Picture(db.Model):
     author_name = db.Column(db.String(255), nullable=False)
     artwork_name = db.Column(db.String(255), nullable=False)
     path = db.Column(db.String(255), nullable=False)
-    description = db.Column(Text(length=500))
+    description = db.Column(Text(length=1000))
     category = db.Column(db.String(50), nullable=False)  # Add category field
     level_id = db.Column(db.Integer, db.ForeignKey('level.id'),
                          nullable=False)

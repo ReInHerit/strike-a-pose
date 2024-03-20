@@ -6,66 +6,129 @@ const serverUrl = Config.SERVER_URL; // `${window.location.protocol}//${window.l
 let socket = io.connect(serverUrl);
 let roomId;
 let user_id;
+const width = 1024;
+const aspectRatio = 1;
 
 $(async () => {
     const video = $("#video").get(0);
-    const webcam = new Webcam(video, "user");
-    await webcam.stream();
+
+    console.log("1) Video dimensions:", video.videoWidth, "x", video.videoHeight);
+    // await setCameraDimensions(1024, 1, video);
+    const constraints = {
+        video: {
+            width: { ideal: width },
+            height: { ideal: width / aspectRatio },
+            aspectRatio: { ideal: aspectRatio }
+        }
+    };
+
+    try {
+        // const stream =
+        // const video = document.querySelector('video');
+        video.srcObject = await navigator.mediaDevices.getUserMedia(constraints);
+        await new Promise((resolve) => {
+            video.onloadedmetadata = () => {
+                resolve();
+            };
+        });
+        await video.play(); // Start playing the video
+        console.log("Video dimensions:", video.videoWidth, "x", video.videoHeight);
+
+        // Use the stream as needed
+    } catch (error) {
+        console.error("Error accessing webcam:", error);
+    }
     const camCanvas = createPoseCanvas($("#camCanvas").get(0));
     const cCanvas = document.getElementById("camCanvas");
     const camContext = cCanvas.getContext("2d");
     const imgCanvas = createPoseCanvas($("#imgCanvas").get(0));
+    video.addEventListener('loadedmetadata', async() => {
 
-    const queryParams = new URLSearchParams(window.location.search);
+        const queryParams = new URLSearchParams(window.location.search);
+        console.log("4) Video dimensions:", video.videoWidth, "x", video.videoHeight);
+        const gameMode = queryParams.get("mode");
+        const initGame = async () => {
+            await initGameIfNeeded(queryParams, gameMode, video, camCanvas, imgCanvas, camContext);
+        };
+        // Check if TensorFlow is loaded
+        if (typeof tf === "undefined") {
+            console.log("TensorFlow is not loaded yet. Waiting...");
+            setTimeout(initGame, 1000); // Adjust the delay time as needed
+        } else {
+            await initGame();
+        }
+    });
 
-    const gameMode = queryParams.get("mode");
-    // Check if TensorFlow is loaded
-    if (typeof tf === "undefined") {
-        console.log("TensorFlow is not loaded yet. Waiting...");
-        setTimeout(() => {
-            // Call the function again after a delay
-            $(async () => {
-                await initGameIfNeeded(queryParams, gameMode, video, camCanvas, imgCanvas, camContext);
-            });
-        }, 1000); // Adjust the delay time as needed
-    } else {
-        await initGameIfNeeded(queryParams, gameMode, video, camCanvas, imgCanvas, camContext);
-    }
+    console.log("3) Video dimensions:", video.videoWidth, "x", video.videoHeight);
+    const webcam = new Webcam(video, "user", cCanvas);
+    await webcam.stream();
 });
 
+// async function setCameraDimensions(width, aspectRatio, videoElement) {
+//     const constraints = {
+//         video: {
+//             width: { ideal: width },
+//             height: { ideal: width / aspectRatio },
+//             aspectRatio: { ideal: aspectRatio }
+//         }
+//     };
+//
+//     try {
+//         const stream = await navigator.mediaDevices.getUserMedia(constraints);
+//         // const video = document.querySelector('video');
+//         videoElement.srcObject = stream;
+//         await new Promise((resolve) => {
+//             videoElement.onloadedmetadata = () => {
+//                 resolve();
+//             };
+//         });
+//         await videoElement.play(); // Start playing the video
+//         console.log("Video dimensions:", videoElement.videoWidth, "x", videoElement.videoHeight);
+//
+//         // Use the stream as needed
+//     } catch (error) {
+//         console.error("Error accessing webcam:", error);
+//     }
+//     return videoElement;
+// }
 async function initGameIfNeeded(queryParams, gameMode, video, camCanvas, imgCanvas, camContext) {
-    if (gameMode.normalize() === "solo") {
+    const mode = gameMode.normalize();
+    console.log(video.width, video.height);
+    if (mode === "solo") {
         const levelId = queryParams.get("id");
         user_id = queryParams.get("playerId");
-        const poses = queryParams.get("nPose")
-        document.getElementById("canvas-container-img").id = "canvas-container-imgSolo";
-        document.getElementById("canvas-container-cam").id = "canvas-container-camSolo";
-        document.getElementById("timer").display = "none !important";
-        document.getElementById("score_container").setAttribute("display", "flex");
-        document.getElementById("score_container").setAttribute("align-content", "center");
-        initGame_solo(levelId, poses, video, camCanvas, imgCanvas, camContext);
-    } else if (gameMode.normalize() === "versus") {
-        document.getElementById("canvas-container-img").style.height = "42%";
-        document.getElementById("canvas-container-cam").style.height = "46%";
-        const game_data = JSON.parse(queryParams.get("gameData"));
-        const player = queryParams.get("player");
-        const paintings_ids = game_data["paintings_ids"];
-        console.log(game_data);
-        roomId = game_data["roomId"];
-        user_id = game_data["playerId"];
-        const poses = parseInt(game_data["nPose"], 10);
-        const nRound = parseInt(game_data["nRound"], 10);
+        const poses = queryParams.get("nPose");
+        adjustSoloLayout();
+        await initGame_solo(levelId, poses, video, camCanvas, imgCanvas, user_id);//, camContext
+    } else if (mode === "versus") {
+        const gameData = JSON.parse(queryParams.get("gameData"));
+        // const player = queryParams.get("player");
+        const { paintings_ids, roomId, playerId, nPose, nRound } = gameData;
+        // user_id = playerId;
+        const poses = parseInt(nPose, 10);
+        const rounds = parseInt(nRound, 10);
+        adjustVersusLayout();
 
-        console.log(poses, nRound, user_id, roomId);
-        document.getElementById("timer").style.display = "flex";
-        await initGame_versus(socket, roomId, paintings_ids, poses, nRound, video, camCanvas, imgCanvas, user_id, player);
+        await initGame_versus(socket, roomId, paintings_ids, poses, rounds, video, camCanvas, imgCanvas, playerId);
     }
 };
+function adjustSoloLayout() {
+    document.getElementById("timer").style.display = "none";
+    document.getElementById("score_container").style.display = "flex";
+    document.getElementById("score_container").style.alignContent = "center";
+}
+
+function adjustVersusLayout() {
+    document.getElementById("timer").style.display = "flex";
+}
+
 
 window.onbeforeunload = function() {
-    if (localStorage.getItem("retired") === "true") {
+    const retired = localStorage.getItem("retired") === "true";
+    if (retired) {
         const queryParams = new URLSearchParams(window.location.search);
-        if (queryParams.get("mode") != null && queryParams.get("mode").normalize() === "versus" && socket !== undefined) {
+        const mode = queryParams.get("mode");
+        if (mode && mode.normalize() === "versus" && socket !== undefined) {
             socket.emit("leaveGame", roomId);
             console.log("Disconnect from game");
             delay(1000);
