@@ -18,6 +18,8 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 bcrypt = Bcrypt(app)
+from views import *
+
 
 print(f"Using port: {port}")
 
