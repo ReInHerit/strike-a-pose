@@ -12,4 +12,3 @@ opencv-python
 waitress
 gunicorn
 python-dotenv
-beautifulsoup4

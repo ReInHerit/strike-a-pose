@@ -26,15 +26,18 @@
         <canvas id="imgCanvas"></canvas>
         <div class="flex-column justify-content-center" id="artwork_label" ></div>
       </div>
-      <div class="timer-div timer-div1 flex-column justify-content-center" id="timer">
-        <span id="timer">00:00:00</span>
-      </div>
+
       <div id ="score_container" class="score-container text-white">
         <div class="progress">
           <div id="score" class="progress-bar bg-secondary" role="progressbar"></div>
         </div>
       </div>
-      <div class="canvas-container" id="canvas-container-cam"><canvas id="camCanvas"></canvas></div>
+      <div class="canvas-container" id="canvas-container-cam">
+        <div class="timer-div timer-div1 flex-column justify-content-center" id="timer">
+          <span id="timer">00:00:00</span>
+        </div>
+        <canvas id="camCanvas"></canvas>
+      </div>
     </div>
     <video id="video" autoplay playsinline position="absolute"></video>
   </body>

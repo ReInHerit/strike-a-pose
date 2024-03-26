@@ -1,5 +1,5 @@
 export class Config {
-  static SERVER_URL = `${window.location.protocol}//${window.location.hostname}/`;
+  static SERVER_URL = `${window.location.protocol}//${window.location.hostname}:${window.location.port}/`;
   static WIDTH = 1024;
   static HEIGHT = 1024;
   static FRAME_RATE = 14;

@@ -12,7 +12,6 @@ import uuid
 import os
 from random import randrange
 
-# from beautifulsoup4 import BeautifulSoup
 from flask import jsonify, request, render_template, redirect, url_for, session, g, make_response, flash, abort, \
     get_flashed_messages, render_template_string
 from flask_login import login_required, current_user, LoginManager, login_user, logout_user
@@ -20,7 +19,6 @@ from flask_socketio import join_room, leave_room, send, emit
 from flask_mail import Mail, Message
 from sqlalchemy import or_, func
 from sqlalchemy.exc import IntegrityError
-# from flask_security import SQLAlchemyUserDatastore, Security, roles_required
 from werkzeug.utils import secure_filename
 
 from app import app, socketio, db
@@ -907,7 +905,7 @@ def handle_start_game_player2(room_id, paintings_ids):
 
 @socketio.on("sendResults")
 def on_sendResults(room_id, results):
-    print(rooms)
+    print('rooms:', rooms)
     my_room = next((x for x in rooms if x.id == int(room_id)), None)
     print("***********MY ROOM in results***********", my_room.id, my_room.results)
     if my_room.results[0] is None:

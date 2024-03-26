@@ -1,17 +1,23 @@
-FROM python:3-slim
+# Use tiangolo/uwsgi-nginx-flask as the base image
+FROM tiangolo/uwsgi-nginx-flask:python3.11
 
-WORKDIR /usr/src/app
+# Set the working directory in the container
+WORKDIR /app
 
-COPY requirements.txt  ./
+# Install additional dependencies for OpenCV
+RUN apt-get update && apt-get install -y \
+    libgl1-mesa-glx \
+    && rm -rf /var/lib/apt/lists/*
+# Copy the contents of the back-end directory into the container
+COPY ./back-end /app
 
-RUN apt update
-RUN apt install ffmpeg libsm6 libxext6  -y
-
+# Install Flask application dependencies
+COPY ./requirements.txt /app
 RUN pip install --no-cache-dir -r requirements.txt
 
-ENV PORT=${PORT:-5000}
-EXPOSE ${PORT}
-
-COPY ./back-end .
-
-CMD gunicorn --bind 0.0.0.0:$PORT app:app
+# Expose port 80 (Nginx default port)
+EXPOSE 8000
+#EXPOSE 80
+ENV PORT 8000
+# Copy the script to the container
+CMD ["python", "app.py"]

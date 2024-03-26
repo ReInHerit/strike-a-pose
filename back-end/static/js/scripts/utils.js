@@ -288,6 +288,7 @@ const updateScoreAndCanvas = (computedDistancePercentage, camCanvas, video, filt
     const maxWidth = window_dimensions.width;
     const maxHeight = window_dimensions.height;
     const windowAspectRatio = maxWidth / maxHeight;
+    const timer = $("#timer")
     const $score = $("#score");
     const $progress = $(".progress");
     const $score_container = $("#score_container");

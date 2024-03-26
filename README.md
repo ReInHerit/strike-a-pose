@@ -34,37 +34,61 @@ python generate_secret_key.py
 ```
 Then copy the generated key and paste it in the file .env file generated above, in the variable SECRET_KEY.
 
-#### Web domain setup
+[//]: # (#### Web domain setup)
 
-If a domain with HTTPS is available simply use the standalone Dockerfile. E.g. that Dockerfile allows to deploy the app on Heroku.
-Otherwise, use the docker-compose approach that spins a docker container with a nginx server and a custom SSL certificate that exposes the docker with Flask and app as HTTPS to access the camera through the web browser.
-In this second option the operation is a bit complex, as follows.
+[//]: # ()
+[//]: # (If a domain with HTTPS is available simply use the standalone Dockerfile. E.g. that Dockerfile allows to deploy the app on Heroku.)
 
-Add the following line to the `/etc/hosts` file of the computer where the docker containers are running:
+[//]: # (Otherwise, use the docker-compose approach that spins a docker container with a nginx server and a custom SSL certificate that exposes the docker with Flask and app as HTTPS to access the camera through the web browser.)
 
-```
-# Added for Strike-a-pose project
-127.0.0.1 strikeapose.it
-# end
-```
-To change the web domain change the occurrences of the domain in the following files:
+[//]: # (In this second option the operation is a bit complex, as follows.)
 
-- `Dockerfile-nginx`
-- `nginx.conf`
-- `app.py`
-- `start.js`
-- `end.js`
-- `config.js`
+[//]: # ()
+[//]: # (Add the following line to the `/etc/hosts` file of the computer where the docker containers are running:)
 
-while the other computers/mobile devices that connect to the server must be able to resolve its domain (e.g. changing their /etc/hosts file to
-point to the server IP address), as in:
+[//]: # ()
+[//]: # (```)
 
-```
-# Added for Strike-a-pose project
-<SERVER_IP> strikeapose.it
-# End
-```
-**<SERVER_IP>** is the IP address of the computer where the containers are executed.
+[//]: # (# Added for Strike-a-pose project)
+
+[//]: # (127.0.0.1 strikeapose.it)
+
+[//]: # (# end)
+
+[//]: # (```)
+
+[//]: # (To change the web domain change the occurrences of the domain in the following files:)
+
+[//]: # ()
+[//]: # (- `Dockerfile-nginx`)
+
+[//]: # (- `nginx.conf`)
+
+[//]: # (- `app.py`)
+
+[//]: # (- `start.js`)
+
+[//]: # (- `end.js`)
+
+[//]: # (- `config.js`)
+
+[//]: # ()
+[//]: # (while the other computers/mobile devices that connect to the server must be able to resolve its domain &#40;e.g. changing their /etc/hosts file to)
+
+[//]: # (point to the server IP address&#41;, as in:)
+
+[//]: # ()
+[//]: # (```)
+
+[//]: # (# Added for Strike-a-pose project)
+
+[//]: # (<SERVER_IP> strikeapose.it)
+
+[//]: # (# End)
+
+[//]: # (```)
+
+[//]: # (**<SERVER_IP>** is the IP address of the computer where the containers are executed.)
 
 #### Superuser generation
 To efficiently manage the database, a superuser is initially required. Follow these steps for superuser generation:
@@ -94,18 +118,18 @@ The superuser can:
 
 ### Docker setup
 
-Run Docker-compose:
+Be sure that **back-end/.env** file is correctly set up with the email and secret key configurations and that the file is added to .dockerignore and .gitignore
+Build the docker image with:
 
 ```
-docker-compose build
-docker-compose up
+docker build -t strike . 
 ```
-or to execute it in detach mode:
+then run it with the following command:
 ```
-docker compose up -d
+docker run --env-file=back-end/.env -p 8000:8000 strike  
 ```
 ### Browse to the application
-Open a web browser and go to the address: https://strikeapose.it. 
+Open a web browser and go to the address: _localhost:8000_. 
 If security warnings appear, ignore them and proceed to the website.
 
 ### New Admin user generation
@@ -138,7 +162,7 @@ An Admin user can:
 ### How to play the game
 #### Accessing the Game:
 
-Visit http://strikeapose.it \
+Visit http://localhost:8000 \
 Confirm the policy to proceed.
 #### Creating a Room:
 

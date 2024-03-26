@@ -23,8 +23,6 @@ $(async () => {
     };
 
     try {
-        // const stream =
-        // const video = document.querySelector('video');
         video.srcObject = await navigator.mediaDevices.getUserMedia(constraints);
         await new Promise((resolve) => {
             video.onloadedmetadata = () => {

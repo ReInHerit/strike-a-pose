@@ -3,7 +3,9 @@ import { Config } from "./scripts/config.js";
 import { picture_ids_for_level } from "./scripts/utils.js";
 
 const serverUrl = Config.SERVER_URL;
-const socket = io.connect(serverUrl);
+// const serverUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+console.log("serverUrl:", serverUrl);
+const socket = io.connect(window.location.origin);
 const waitingScreen = $("#waiting-screen")[0];
 const players_input = $("#nPlayers_setted");
 const poses_input = $("#nPose_setted")[0];
@@ -13,7 +15,6 @@ const joinRoomBtn = $("#join-room-btn");
 const join_room_input = $("#roomid_textInput");
 let serverRoomsData = [];
 const uniqueId = $("#user-random-id").text();
-console.log("uniqueId:", waitingScreen, $("#waiting-screen"));
 let isStartingGame = false;
 localStorage.setItem('privacyAccepted', 'false')
 let gameData = {};
