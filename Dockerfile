@@ -19,5 +19,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 8000
 #EXPOSE 80
 ENV PORT 8000
+ENV AM_I_IN_A_DOCKER_CONTAINER Yes
 # Copy the script to the container
 CMD ["python", "app.py"]

@@ -13,7 +13,7 @@ class Config(object):
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = None
-    UPLOAD_FOLDER = "back-end/static/assets/"
+    UPLOAD_FOLDER = "static/assets/"
 
 
 class ProductionConfig(Config):

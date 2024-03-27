@@ -380,16 +380,18 @@ def admin_database_management():
             file = request.files['image']
             filename = secure_filename(file.filename)
 
-            destination_folder = os.path.join(app.config['UPLOAD_FOLDER'], category)
+            image_folder = os.path.join(app.config['UPLOAD_FOLDER'], category)
+            destination_folder = os.path.join('back-end', image_folder)
             if destination_folder and not os.path.exists(destination_folder):
                 os.makedirs(destination_folder)
             # Save the file to the desired path
             file_path = os.path.join(destination_folder, filename)
+            read_path = os.path.join(image_folder, filename)
             file.save(file_path)
             new_picture = Picture(
                 author_name=add_picture_form.author_name.data,
                 artwork_name=add_picture_form.artwork_name.data,
-                path=file_path,
+                path=read_path,
                 category=category,
                 description=add_picture_form.description.data,
                 level_id=1,
@@ -409,13 +411,18 @@ def admin_database_management():
             picture_to_remove = Picture.query.get(delete_picture_id)
             if picture_to_remove:
                 category = picture_to_remove.category
-                path = picture_to_remove.path
+                path = os.path.join('back-end', picture_to_remove.path)
                 if os.path.exists(path):
                     os.remove(path)
                 db.session.delete(picture_to_remove)
                 db.session.commit()
 
                 flash('Picture removed successfully!', 'success')
+
+                if os.path.isdir(os.path.dirname(path)) and not os.listdir(os.path.dirname(path)):
+                    os.rmdir(os.path.dirname(path))
+                    flash('Folder deleted successfully!', 'info')
+
                 remaining_pictures = Picture.query.filter_by(category=category).first()
                 if not remaining_pictures:
                     # If no remaining pictures, remove the category from the Level model

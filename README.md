@@ -34,61 +34,6 @@ python generate_secret_key.py
 ```
 Then copy the generated key and paste it in the file .env file generated above, in the variable SECRET_KEY.
 
-[//]: # (#### Web domain setup)
-
-[//]: # ()
-[//]: # (If a domain with HTTPS is available simply use the standalone Dockerfile. E.g. that Dockerfile allows to deploy the app on Heroku.)
-
-[//]: # (Otherwise, use the docker-compose approach that spins a docker container with a nginx server and a custom SSL certificate that exposes the docker with Flask and app as HTTPS to access the camera through the web browser.)
-
-[//]: # (In this second option the operation is a bit complex, as follows.)
-
-[//]: # ()
-[//]: # (Add the following line to the `/etc/hosts` file of the computer where the docker containers are running:)
-
-[//]: # ()
-[//]: # (```)
-
-[//]: # (# Added for Strike-a-pose project)
-
-[//]: # (127.0.0.1 strikeapose.it)
-
-[//]: # (# end)
-
-[//]: # (```)
-
-[//]: # (To change the web domain change the occurrences of the domain in the following files:)
-
-[//]: # ()
-[//]: # (- `Dockerfile-nginx`)
-
-[//]: # (- `nginx.conf`)
-
-[//]: # (- `app.py`)
-
-[//]: # (- `start.js`)
-
-[//]: # (- `end.js`)
-
-[//]: # (- `config.js`)
-
-[//]: # ()
-[//]: # (while the other computers/mobile devices that connect to the server must be able to resolve its domain &#40;e.g. changing their /etc/hosts file to)
-
-[//]: # (point to the server IP address&#41;, as in:)
-
-[//]: # ()
-[//]: # (```)
-
-[//]: # (# Added for Strike-a-pose project)
-
-[//]: # (<SERVER_IP> strikeapose.it)
-
-[//]: # (# End)
-
-[//]: # (```)
-
-[//]: # (**<SERVER_IP>** is the IP address of the computer where the containers are executed.)
 
 #### Superuser generation
 To efficiently manage the database, a superuser is initially required. Follow these steps for superuser generation:
