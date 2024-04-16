@@ -372,7 +372,7 @@ def admin_database_management():
                 return redirect(url_for('admin_database_management'))
 
             # Add the new category to the database
-            category = new_category.replace(' ', '_').lower()
+            category = new_category.replace(' ', '_')  # .lower()
             new_level = Level(name=category)
             db.session.add(new_level)
             db.session.commit()
@@ -381,7 +381,7 @@ def admin_database_management():
             filename = secure_filename(file.filename)
 
             image_folder = os.path.join(app.config['UPLOAD_FOLDER'], category)
-            destination_folder = os.path.join('back-end', image_folder)
+            destination_folder = image_folder  # os.path.join('back-end', image_folder)
             if destination_folder and not os.path.exists(destination_folder):
                 os.makedirs(destination_folder)
             # Save the file to the desired path
@@ -411,7 +411,7 @@ def admin_database_management():
             picture_to_remove = Picture.query.get(delete_picture_id)
             if picture_to_remove:
                 category = picture_to_remove.category
-                path = os.path.join('back-end', picture_to_remove.path)
+                path = picture_to_remove.path  # 'back-end',
                 if os.path.exists(path):
                     os.remove(path)
                 db.session.delete(picture_to_remove)

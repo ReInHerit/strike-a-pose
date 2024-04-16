@@ -470,3 +470,11 @@ input[type=email]::placeholder {
     flex-direction: column;
     align-items: center;
 }
+.modal-footer {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+.modal-footer form {
+    width: 100%;
+}
