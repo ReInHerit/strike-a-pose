@@ -510,17 +510,17 @@ $(document).ready(async function() {
         window.location = `/logout?user_id=${uniqueId}`;
 
     };
-
-    window.onbeforeunload = async function(event) {
-        if (isStartingGame) {
-            // Display a message to indicate that the user cannot leave while starting a game
-            event.preventDefault();
-            event.returnValue = "You cannot leave while starting a game.";
-        } else {
-            console.log("in onbeforeunload");
-            window.location = `/logout?user_id=${uniqueId}`;
-        }
-    };
+window.onbeforeunload = null
+    // window.onbeforeunload = async function(event) {
+        // if (isStartingGame) {
+        //     // Display a message to indicate that the user cannot leave while starting a game
+        //     event.preventDefault();
+        //     event.returnValue = "You cannot leave while starting a game.";
+        // } else {
+        //     console.log("in onbeforeunload");
+        //     window.location = `/logout?user_id=${uniqueId}`;
+        // }
+    // };
 });
 
 function showWaitingScreen() {
