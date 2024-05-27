@@ -510,17 +510,15 @@ $(document).ready(async function() {
         window.location = `/logout?user_id=${uniqueId}`;
 
     };
+window.onload = function() {
+    var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    if (isSafari) {
+        alert("Kindly utilize an alternative browser for accessing the game. Safari is not compatible. Recommended browsers include Chrome, Firefox, and Edge.");
+    } else {
+        console.log("Not Safari")
+    }
+};
 window.onbeforeunload = null
-    // window.onbeforeunload = async function(event) {
-        // if (isStartingGame) {
-        //     // Display a message to indicate that the user cannot leave while starting a game
-        //     event.preventDefault();
-        //     event.returnValue = "You cannot leave while starting a game.";
-        // } else {
-        //     console.log("in onbeforeunload");
-        //     window.location = `/logout?user_id=${uniqueId}`;
-        // }
-    // };
 });
 
 function showWaitingScreen() {

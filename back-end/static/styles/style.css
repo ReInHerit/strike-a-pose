@@ -228,7 +228,7 @@ th:nth-child(1), td:nth-child(1) {
 
 #add_room_row td:nth-child(1), #join_room_row td:nth-child(1) {
     width: 21vw;
-    background-color: #006d9b;
+    background-color: darkgray;
     color: white;
 }
 
