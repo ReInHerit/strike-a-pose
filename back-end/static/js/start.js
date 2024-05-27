@@ -236,55 +236,57 @@ $(document).ready(async function() {
         const newRow = table.insertRow();
         const isGrayedOut = !room_obj.free_space && !room_obj.clients.includes(uniqueId);
         let iconButton;
-        let clientsIcons = "";
-        if (room_obj.players_mode === "2") {
-            if (room_obj.creator === uniqueId) {
-                if (room_obj.num_clients === 1) {
-                    iconButton = createIconButton(`delete/room/${room_obj.room_id}`, "fa-solid fa-trash icon-color", deleteRoom, isGrayedOut);
-                    clientsIcons = `<i id="you" class="fa-solid fa-user"></i><i class="fa-regular fa-user"></i>`;
-                } else if (room_obj.num_clients === 2) {
-                    iconButton = createIconButton(`play/room/${room_obj.room_id}`, "fa-solid fa-play icon-color", play_versus, isGrayedOut);
-                    clientsIcons = `<i id="you" class="fa-solid fa-user"></i><i class="fa-solid fa-user"></i>`;
-                }
-            } else if (room_obj.clients.includes(uniqueId)) {
-                if (room_obj.num_clients === 2) {
-                    iconButton = createIconButton(`play/room/${room_obj.room_id}`, "fa-solid fa-play icon-color", play_versus, isGrayedOut);
-                    clientsIcons = `<i id="you" class="fa-solid fa-user"></i><i class="fa-solid fa-user"></i>`;
-                }
-            } else {
-                if (room_obj.num_clients === 1) {
-                    iconButton = createIconButton(`join/room/${room_obj.room_id}`, "fa-solid fa-right-to-bracket icon-color", joinRoom, isGrayedOut);
-                    clientsIcons = `<i id="you" class="fa-regular fa-user"></i><i class="fa-solid fa-user"></i>`;
-                } else if (room_obj.num_clients === 2) {
-                    iconButton = createIconButton(`play/room/${room_obj.room_id}`, "fa-solid fa-gamepad icon-color", play_versus, isGrayedOut);
-                    clientsIcons = `<i id="you" class="fa-solid fa-user"></i><i class="fa-solid fa-user"></i>`;
-                }
-            }
-        } else if (room_obj.players_mode === "1") {
-            clientsIcons = `<i id="you" class="fa-solid fa-user"></i>`;
-            if (room_obj.creator === uniqueId) {
-                iconButton = createIconButton(`play/room/${room_obj.room_id}`, "fa-solid fa-play icon-color", play_solo, isGrayedOut);
-            } else {
-                iconButton = createIconButton("#", "fa-solid fa-gamepad icon-color", play_solo, isGrayedOut);
-            }
-        }
-
-        for (let i = 0; i < 7; i++) {
+        // let clientsIcons = "";
+        // if (room_obj.players_mode === "2") {
+        //     if (room_obj.creator === uniqueId) {
+        //         if (room_obj.num_clients === 1) {
+        //             iconButton = createIconButton(`delete/room/${room_obj.room_id}`, "fa-solid fa-trash icon-color", deleteRoom, isGrayedOut);
+        //             clientsIcons = `<i id="you" class="fa-solid fa-user"></i><i class="fa-regular fa-user"></i>`;
+        //         } else if (room_obj.num_clients === 2) {
+        //             iconButton = createIconButton(`play/room/${room_obj.room_id}`, "fa-solid fa-play icon-color", play_versus, isGrayedOut);
+        //             clientsIcons = `<i id="you" class="fa-solid fa-user"></i><i class="fa-solid fa-user"></i>`;
+        //         }
+        //     } else if (room_obj.clients.includes(uniqueId)) {
+        //         if (room_obj.num_clients === 2) {
+        //             iconButton = createIconButton(`play/room/${room_obj.room_id}`, "fa-solid fa-play icon-color", play_versus, isGrayedOut);
+        //             clientsIcons = `<i id="you" class="fa-solid fa-user"></i><i class="fa-solid fa-user"></i>`;
+        //         }
+        //     } else {
+        //         if (room_obj.num_clients === 1) {
+        //             iconButton = createIconButton(`join/room/${room_obj.room_id}`, "fa-solid fa-right-to-bracket icon-color", joinRoom, isGrayedOut);
+        //             clientsIcons = `<i id="you" class="fa-regular fa-user"></i><i class="fa-solid fa-user"></i>`;
+        //         } else if (room_obj.num_clients === 2) {
+        //             iconButton = createIconButton(`play/room/${room_obj.room_id}`, "fa-solid fa-gamepad icon-color", play_versus, isGrayedOut);
+        //             clientsIcons = `<i id="you" class="fa-solid fa-user"></i><i class="fa-solid fa-user"></i>`;
+        //         }
+        //     }
+        // } else if (room_obj.players_mode === "1") {
+        //     clientsIcons = `<i id="you" class="fa-solid fa-user"></i>`;
+        //     if (room_obj.creator === uniqueId) {
+        //         iconButton = createIconButton(`play/room/${room_obj.room_id}`, "fa-solid fa-play icon-color", play_solo, isGrayedOut);
+        //     } else {
+        //         iconButton = createIconButton("#", "fa-solid fa-gamepad icon-color", play_solo, isGrayedOut);
+        //     }
+        // }
+        //
+        // console.log(iconButton)
+        iconButton = createIconButton(`play/room/${room_obj.room_id}`, "fa-solid fa-play icon-color", play_solo, isGrayedOut);
+        for (let i = 0; i < 5; i++) {
             newRow.insertCell(i);
         }
-        // console.log(iconButton)
+
         newRow.cells[0].innerHTML = `<b>${row_id}</b>`;
         newRow.cells[1].textContent = room_obj.room_id;
-        newRow.cells[2].innerHTML = clientsIcons;
-        newRow.cells[3].textContent = room_obj.n_pose;
-        newRow.cells[4].textContent = (room_obj.players_mode === "2") ? room_obj.n_round: "-";;
-        newRow.cells[5].textContent = room_obj.level;
-        newRow.cells[6].appendChild(iconButton);
+        // newRow.cells[2].innerHTML = clientsIcons;
+        newRow.cells[2].textContent = room_obj.n_pose;
+        // newRow.cells[4].textContent = (room_obj.players_mode === "2") ? room_obj.n_round: "-";;
+        newRow.cells[3].textContent = room_obj.level;
+        newRow.cells[4].appendChild(iconButton);
 
-        if (isGrayedOut) {
-            newRow.classList.add("grayed-out");
-            newRow.cells[6].classList.add("unclickable");
-        }
+        // if (isGrayedOut) {
+        //     newRow.classList.add("grayed-out");
+        //     newRow.cells[6].classList.add("unclickable");
+        // }
     }
 
     function createIconButton(href, iconClass, clickHandler, isGrayedOut) {
@@ -401,109 +403,109 @@ $(document).ready(async function() {
 
     function play_solo(button) {
         const row = button.closest("tr");
-        const level = row.cells[5].textContent;
-        const n = row.cells[3].textContent;
+        const level = row.cells[3].textContent;
+        const n = row.cells[2].textContent;
         console.log("in play_solo", level, n);
 
         window.location = `/game?mode=solo&id=${level}&nPose=${n}&playerId=${uniqueId}`;
     }
 
-    async function play_versus(button) {
-        const row = button.closest("tr");
-        const room_id = row.cells[1].textContent;
-        console.log("in play_versus", room_id);
-        isStartingGame = true;
-
-        await socket.emit("ready_to_start_game", { "room_id": room_id, "user_id": uniqueId });
-        console.log("emitted");
-    }
-
-    socket.on("start_game", async (room) => {
-        console.log(room["id"]);
-        gameData = await game_data(room["id"]);
-        if (uniqueId === gameData["players"][0]) {
-            console.log("player1");
-            gameData["playerId"] = uniqueId;
-            window.location = `/game?mode=versus&gameData=${JSON.stringify(gameData)}&player=1`;
-        } else if (uniqueId === gameData["players"][1]) {
-            gameData["playerId"] = uniqueId;
-            console.log("player2");
-            showWaitingScreen();
-        }
-        console.log("play_versus function executed");
-    });
-    socket.on("start_player2", (data) => {
-        console.log(data)
-        if (gameData["players"][1] === uniqueId) {
-            gameData["playerId"] = uniqueId;
-            gameData["paintings_ids"] = data["paintings_ids"];
-            hideWaitingScreen()
-            isStartingGame = true;
-            console.log("Received 'start_player2' signal from server.");
-            window.location = `/game?mode=versus&gameData=${JSON.stringify(gameData)}&player=2`;
-        }
-    });
-    async function game_data(room_id) {
-        await fetchRoomsData();
-        let room = serverRoomsData.find(room => room.room_id === parseInt(room_id));
-        let paintings_ids = []
-        for (let roomObj in roomsData) {
-            console.log(roomsData[roomObj].room_id, room_id)
-            if (roomsData[roomObj].room_id === room_id) {
-                console.log("in if", room);
-                paintings_ids = roomsData[roomObj].picture_ids;
-            }
-        }
-        console.log('roomsData:',roomsData)
-        const players = room.clients;
-        console.log("start_game event received", room_id, players);
-        const nPose = room.n_pose;
-        const nRound = room.n_round;
-        const playersMode = room.players_mode;
-        const creator = room.creator;
-        const levelId = room.level;
-        console.log("in play_versus", room_id, nPose, nRound);
-        const gameData = {
-            "nPose": nPose.toString(),
-            "nRound": nRound.toString(),
-            "players": players,
-            "paintings_ids": paintings_ids,
-            "level": levelId,
-            "roomId": room_id,
-            "creator": creator
-        };
-        return gameData
-    }
-    function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-}
-    //LOGOUT
-    async function leaveRoom() {
-        if (socket !== undefined) {
-            console.log("in leaveRoom");
-
-            const leavePromises = roomsData
-                  .filter(room => room.clients && room.clients.includes(uniqueId))
-                  .map(async room => {
-                      console.log("in leaveRoom", room.room_id);
-                      // Emit a "leave" event for each room and await it
-                      await socket.emit("leave_room", {
-                          "room_id": room.room_id,
-                          "user_id": uniqueId
-                      });
-                      console.log("emitted");
-                  });
-
-            // Wait for all "leave" events to complete
-            await Promise.all(leavePromises);
-
-            console.log("leaveRoom function executed");
-        }
-    }
+//     async function play_versus(button) {
+//         const row = button.closest("tr");
+//         const room_id = row.cells[1].textContent;
+//         console.log("in play_versus", room_id);
+//         isStartingGame = true;
+//
+//         await socket.emit("ready_to_start_game", { "room_id": room_id, "user_id": uniqueId });
+//         console.log("emitted");
+//     }
+//
+//     socket.on("start_game", async (room) => {
+//         console.log(room["id"]);
+//         gameData = await game_data(room["id"]);
+//         if (uniqueId === gameData["players"][0]) {
+//             console.log("player1");
+//             gameData["playerId"] = uniqueId;
+//             window.location = `/game?mode=versus&gameData=${JSON.stringify(gameData)}&player=1`;
+//         } else if (uniqueId === gameData["players"][1]) {
+//             gameData["playerId"] = uniqueId;
+//             console.log("player2");
+//             showWaitingScreen();
+//         }
+//         console.log("play_versus function executed");
+//     });
+//     socket.on("start_player2", (data) => {
+//         console.log(data)
+//         if (gameData["players"][1] === uniqueId) {
+//             gameData["playerId"] = uniqueId;
+//             gameData["paintings_ids"] = data["paintings_ids"];
+//             hideWaitingScreen()
+//             isStartingGame = true;
+//             console.log("Received 'start_player2' signal from server.");
+//             window.location = `/game?mode=versus&gameData=${JSON.stringify(gameData)}&player=2`;
+//         }
+//     });
+//     async function game_data(room_id) {
+//         await fetchRoomsData();
+//         let room = serverRoomsData.find(room => room.room_id === parseInt(room_id));
+//         let paintings_ids = []
+//         for (let roomObj in roomsData) {
+//             console.log(roomsData[roomObj].room_id, room_id)
+//             if (roomsData[roomObj].room_id === room_id) {
+//                 console.log("in if", room);
+//                 paintings_ids = roomsData[roomObj].picture_ids;
+//             }
+//         }
+//         console.log('roomsData:',roomsData)
+//         const players = room.clients;
+//         console.log("start_game event received", room_id, players);
+//         const nPose = room.n_pose;
+//         const nRound = room.n_round;
+//         const playersMode = room.players_mode;
+//         const creator = room.creator;
+//         const levelId = room.level;
+//         console.log("in play_versus", room_id, nPose, nRound);
+//         const gameData = {
+//             "nPose": nPose.toString(),
+//             "nRound": nRound.toString(),
+//             "players": players,
+//             "paintings_ids": paintings_ids,
+//             "level": levelId,
+//             "roomId": room_id,
+//             "creator": creator
+//         };
+//         return gameData
+//     }
+//     function shuffleArray(array) {
+//     for (let i = array.length - 1; i > 0; i--) {
+//         const j = Math.floor(Math.random() * (i + 1));
+//         [array[i], array[j]] = [array[j], array[i]];
+//     }
+//     return array;
+// }
+//     //LOGOUT
+//     async function leaveRoom() {
+//         if (socket !== undefined) {
+//             console.log("in leaveRoom");
+//
+//             const leavePromises = roomsData
+//                   .filter(room => room.clients && room.clients.includes(uniqueId))
+//                   .map(async room => {
+//                       console.log("in leaveRoom", room.room_id);
+//                       // Emit a "leave" event for each room and await it
+//                       await socket.emit("leave_room", {
+//                           "room_id": room.room_id,
+//                           "user_id": uniqueId
+//                       });
+//                       console.log("emitted");
+//                   });
+//
+//             // Wait for all "leave" events to complete
+//             await Promise.all(leavePromises);
+//
+//             console.log("leaveRoom function executed");
+//         }
+//     }
 
 
     window.logout = async function() {

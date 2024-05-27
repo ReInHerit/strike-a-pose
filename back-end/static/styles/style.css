@@ -252,7 +252,7 @@ th:nth-child(7), td:nth-child(7) {
 
 caption {
     padding-left: 10px;
-    caption-side: top;
+    caption-side: bottom;
 }
 
 #add_room_row td:nth-child(6) {
