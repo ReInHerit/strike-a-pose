@@ -391,6 +391,7 @@ const initGame_solo = async (levelId, poses, video, camCanvas, imgCanvas, user_i
                     // Prepare data for video production
                     const formData = new FormData();
                     idRandom.forEach((pictureId) => {
+                        console.log('picture_id', pictureId)
                         formData.append("picture_ids[]", pictureId);
                     });
                     userVideoList.forEach(({ id, frameList }) => {

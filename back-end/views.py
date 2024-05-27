@@ -37,7 +37,22 @@ players_ready_to_start = {}
 room_states = {}
 rooms = []
 rooms_to_delete = []
-video_directory = 'static/videos'
+
+HOST = os.getenv('HOST', 'localhost')
+PORT = os.getenv('PORT', '8000')
+PROTOCOL = os.getenv('PROTOCOL', 'http')
+
+cwd = os.getcwd()
+print('///////////////////////////CWD///////////////////////////', cwd)
+
+# Set video_directory based on the current working directory
+if 'back-end' in cwd:
+    video_directory = 'static/videos'
+    static_assets_directory = 'static/assets'
+else:
+    video_directory = 'back-end/static/videos'
+    static_assets_directory = 'back-end/static/assets'
+# video_directory = 'back-end/static/videos'
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif'}
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465  # Use 465 for SSL, 587 for TLS
@@ -617,7 +632,7 @@ def post_video():
     bottom_row_height = 51
     video_width = 1024
     # Load and resize the logo image
-    title_section = cv2.imread('static/assets/video_logo2.png')
+    title_section = cv2.imread(static_assets_directory + '/video_logo2.png')
     title_section_flipped = cv2.flip(title_section, 1)
     center_row = np.zeros((center_row_height, video_width, 3), np.uint8)
     center_row[5:10, :] = (0, 157, 224)
@@ -626,7 +641,9 @@ def post_video():
 
     for picture_id in request.form.getlist('picture_ids[]'):
         picture = Picture.query.get(int(picture_id))
-        picture_image = cv2.imread(picture.path)
+        picture_path = os.path.join(static_assets_directory, picture.path.replace('static/assets/', '', 1))
+        print('/////////PICTURE///////////', picture_path, '////////////////////////////////////////////////////////////')
+        picture_image = cv2.imread(picture_path)
         picture_aspect_ratio = picture_image.shape[1] / picture_image.shape[0]
 
         if picture_aspect_ratio > 1:
@@ -670,6 +687,7 @@ def post_video():
 
 @app.route("/videos/<id>", methods=["GET"])
 def get_video(id):
+    print('///////////////////////////GET VIDEO///////////////////////////', id, '////////////////////////////////////////////////////////////')
     video = Video.query.get(int(id))
     return jsonify(video.as_dict())
 
@@ -733,6 +751,17 @@ def send_video():
                 </body>
                 </html>
                 """
+        privacy_policy_url = f"{PROTOCOL}://{HOST}:{PORT}/policy"
+        body += f'''
+            <div style="font-size: 0.8em; color: #888;">
+                <br>You received this e-mail because, while using Strike-A-Pose, you requested that the results be e-mailed to you. 
+                As specified in the privacy policy you accepted, the head poses captured have been used to create the attached 
+                final images. No files or images are stored in our system, and this e-mail will be promptly removed from our 
+                servers after the result video is generated and sent to you. We do not share your body images or personal 
+                information with any third-party services. Please see the <a href="{privacy_policy_url}"> Privacy Policy</a> for more details.
+            </div>
+            '''
+
         print('////////////////////////////////////////////////////')
         msg.attach(MIMEText(body, 'html', 'utf-8'))
         print('//////////body attached//////////')
