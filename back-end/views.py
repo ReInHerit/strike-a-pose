@@ -38,29 +38,38 @@ room_states = {}
 rooms = []
 rooms_to_delete = []
 
-HOST = os.getenv('HOST', 'localhost')
-PORT = os.getenv('PORT', '8000')
-PROTOCOL = os.getenv('PROTOCOL', 'http')
+# HOST = os.getenv('HOST', 'localhost')
+# PORT = os.getenv('PORT', '8000')
+# PROTOCOL = os.getenv('PROTOCOL', 'http')
 
 cwd = os.getcwd()
 print('///////////////////////////CWD///////////////////////////', cwd)
-
+server = os.getenv('SERVER_URL')
+privacy_policy_url = os.getenv('PRIVACY_POLICY_URL')
+smtp_username = os.getenv('SMTP_USERNAME')
+smtp_password = os.getenv('SMTP_PASSWORD')
+smtp_server = 'smtp.gmail.com'
+print('///////////////////////////SERVER///////////////////////////', server, privacy_policy_url)
 # Set video_directory based on the current working directory
-if 'back-end' in cwd:
+if os.path.exists(os.path.join(cwd, 'static')):
     video_directory = 'static/videos'
     static_assets_directory = 'static/assets'
-else:
+elif os.path.exists(os.path.join(cwd, 'back-end')):
     video_directory = 'back-end/static/videos'
     static_assets_directory = 'back-end/static/assets'
-# video_directory = 'back-end/static/videos'
+elif os.path.exists(os.path.join(os.path.dirname(cwd), 'static')):
+    video_directory = '../static/videos'
+    static_assets_directory = '../static/assets'
+else:
+    print("Neither 'static' nor 'back-end' directories exist in the current working directory.")
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif'}
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_SERVER'] = smtp_server
 app.config['MAIL_PORT'] = 465  # Use 465 for SSL, 587 for TLS
 app.config['MAIL_USE_SSL'] = True  # Set to True for SSL, False for TLS
 app.config['MAIL_USE_TLS'] = False  # Set to True for TLS, False for SSL
-app.config['MAIL_USERNAME'] = os.getenv('SMTP_USERNAME')  # Your Gmail username
-app.config['MAIL_PASSWORD'] = os.getenv('SMTP_PASSWORD')  # Your Gmail password
-app.config['MAIL_DEFAULT_SENDER'] = os.getenv('SMTP_USERNAME')  # Your default sender address
+app.config['MAIL_USERNAME'] = smtp_username  # Your Gmail username
+app.config['MAIL_PASSWORD'] = smtp_password  # Your Gmail password
+app.config['MAIL_DEFAULT_SENDER'] = smtp_username  # Your default sender address
 mail = Mail(app)
 select_signup_tab = True
 
@@ -140,15 +149,15 @@ def start_post():
     return json_response
 
 
-@app.route("/room", methods=["POST"])
-def room():
-    id = request.json.get("id", None)
-    level = request.json.get("level", None)
-    n = request.json.get("n", None)
-    my_room = next((x for x in rooms if x.id == int(id)), None)
-    my_room.level = level
-    my_room.n = n
-    return jsonify(my_room.to_string())
+# @app.route("/room", methods=["POST"])
+# def room():
+#     id = request.json.get("id", None)
+#     level = request.json.get("level", None)
+#     n = request.json.get("n", None)
+#     my_room = next((x for x in rooms if x.id == int(id)), None)
+#     my_room.level = level
+#     my_room.n = n
+#     return jsonify(my_room.to_string())
 
 
 @app.route("/delete/room/<id>", methods=["GET"])
@@ -162,26 +171,26 @@ def delete_room(id):
         return jsonify({"message": "Room deleted successfully"}), 200
 
 
-@app.route("/join/<id>", methods=["GET"])
-def join(id):
-    user_id = request.args.get("user_id")
-    my_room = next((x for x in rooms if x.id == int(id)), None)
-    if my_room is None:
-        return jsonify("This room doesn't exist"), 400  # Return an error if the room doesn't exist
-
-    if user_id in my_room.clients:
-        return jsonify(my_room.to_string())
-
-    if len(my_room.clients) == 0:
-        return jsonify("There is no host in the room"), 400
-    my_room.clients.append(user_id)
-    my_room.num_clients += 1
-    if len(my_room.clients) == 2:
-        my_room.free = False
-    else:
-        my_room.free = True
-    socketio.emit("join", {"room_data": my_room.to_string(), "joiner": user_id})  # Notify all clients
-    return jsonify(my_room.to_string())
+# @app.route("/join/<id>", methods=["GET"])
+# def join(id):
+#     user_id = request.args.get("user_id")
+#     my_room = next((x for x in rooms if x.id == int(id)), None)
+#     if my_room is None:
+#         return jsonify("This room doesn't exist"), 400  # Return an error if the room doesn't exist
+#
+#     if user_id in my_room.clients:
+#         return jsonify(my_room.to_string())
+#
+#     if len(my_room.clients) == 0:
+#         return jsonify("There is no host in the room"), 400
+#     my_room.clients.append(user_id)
+#     my_room.num_clients += 1
+#     if len(my_room.clients) == 2:
+#         my_room.free = False
+#     else:
+#         my_room.free = True
+#     socketio.emit("join", {"room_data": my_room.to_string(), "joiner": user_id})  # Notify all clients
+#     return jsonify(my_room.to_string())
 
 
 @app.route("/logout", methods=["GET"])
@@ -720,24 +729,20 @@ def send_video():
         paintings_info_str = '\n'.join(
             [f"Artwork {i + 1}: {info['author_name']} - {info['artwork_name']}: {info['description']}<br/>" for i, info in
              enumerate(paintings_info)])
-        print('////////////////////////////////////////////////////', paintings_info_str)
         # Attach the video file
         video = request.files['video']
         video_data = video.read()
         # Define your email server and credentials
-        smtp_server = 'smtp.gmail.com'
+        # smtp_server = 'smtp.gmail.com'
         smtp_port = 587
-        smtp_username = os.getenv('SMTP_USERNAME')
-        smtp_password = os.getenv('SMTP_PASSWORD')
-        print('////////////////////////////////////////////////////', smtp_username, smtp_password)
+
         # Create a message object
         msg = MIMEMultipart()
-        msg['From'] = os.getenv('SMTP_USERNAME')
+        msg['From'] = smtp_username
         msg['To'] = user_email
         msg['Subject'] = 'Your Strike-a-pose Video'
-        print('////////////////////////////////////////////////////', user_email, msg['To'])
-        # Add a body to the email (optional)
-        # body = f'\n\nDear User,\n\nThank you for participating in this engagement experience with art. We are delighted to share with you the video capturing your graceful poses inspired by some of the masterpieces in our collection. Your interaction can inspire you for a deeper exploration of the following artworks:\n\n{paintings_info_str}\n\nFeel free to enjoy and share your experience in your social media.\n\nBest regards,\nThe ReInHerit Consortium'
+        print('////////////////////////////////////////////////////', user_email)
+
         body = f"""
                 <html>
                 <body>
@@ -751,7 +756,7 @@ def send_video():
                 </body>
                 </html>
                 """
-        privacy_policy_url = f"{PROTOCOL}://{HOST}:{PORT}/policy"
+        print(privacy_policy_url)
         body += f'''
             <div style="font-size: 0.8em; color: #888;">
                 <br>You received this e-mail because, while using Strike-A-Pose, you requested that the results be e-mailed to you. 
@@ -762,21 +767,16 @@ def send_video():
             </div>
             '''
 
-        print('////////////////////////////////////////////////////')
         msg.attach(MIMEText(body, 'html', 'utf-8'))
-        print('//////////body attached//////////')
         # Attach the video file
         video_attachment = MIMEApplication(video_data, Name='video.mp4')  # Set the desired filename
         video_attachment['Content-Disposition'] = 'attachment; filename="strike-a-pose-video.mp4"'
         msg.attach(video_attachment)
-        print('//////////video attached//////////')
         # Create an SMTP session
         smtp = smtplib.SMTP(smtp_server, smtp_port)
         smtp.starttls()
         smtp.set_debuglevel(2)
-        print('//////////smtp session created//////////')
         smtp.login(smtp_username, smtp_password)
-        print('//////////smtp session login//////////')
         # Send the email
         try:
             smtp.sendmail(msg['From'], user_email, msg.as_string())
@@ -875,125 +875,125 @@ def end():
 
 
 # SocketIO events
-@socketio.on("connect")
-def connect():
-    emit("status", {"data": "connection established!"})
-    emit("update_rooms", [room.to_string() for room in rooms])
-
-
-@socketio.on("join_room")
-def handle_join_room(room_id):
-    join_room(room_id)
-
-
-@socketio.on("player_leave")
-def handle_player_leave(room_id, user_id):
-    leave_room(room_id)
-    # Optionally, notify other players in the room about the departure
-    emit("player_left", {"player_id": user_id}, room=room_id)
-
-
-@socketio.on('leave_room')
-def handle_leave_room(data):
-    room_id = data.get('room_id')
-    user_id = data.get('user_id')
-
-    my_room = next((x for x in rooms if x.id == int(room_id)), None)
-    if my_room is not None:
-        if user_id in my_room.clients:
-            my_room.clients.remove(user_id)
-
-        if not my_room.clients:
-            rooms.remove(my_room)
-            socketio.emit("room_deleted", {"room_id": my_room.id})  # Notify all clients
-
-
-@socketio.on("ready_to_start_game")
-def handle_start_game_request(data):
-    room_id = data["room_id"]
-    user_id = data["user_id"]
-
-    # Check if the room exists and initialize the players_ready_to_start list if needed
-    if room_id not in room_states:
-        room_states[room_id] = {
-            'player1': None,
-            'player2_ready': False
-        }
-    # Assign the first player to join as player1
-    if room_states[room_id]['player1'] is None:
-        room_states[room_id]['player1'] = user_id
-        print("Player 1:", user_id)
-    else:
-        # Assign the second player to join as player2
-        room_states[room_id]['player2_ready'] = True
-        print("Player 2:", user_id)
-
-        if room_states[room_id]['player1'] is not None and room_states[room_id]['player2_ready']:
-            # Both players are ready, emit a "start_game" event to both clients in the room
-            socketio.emit("start_game", {"id": room_id})
-
-
-@socketio.on("start_game_player2")
-def handle_start_game_player2(room_id, paintings_ids):
-    print("Received 'start_game_player2' from player 1 in room:", room_id, paintings_ids)
-    socketio.emit("start_player2", {"room": room_id, "paintings_ids": paintings_ids})
-
-
-@socketio.on("sendResults")
-def on_sendResults(room_id, results):
-    print('rooms:', rooms)
-    my_room = next((x for x in rooms if x.id == int(room_id)), None)
-    print("***********MY ROOM in results***********", my_room.id, my_room.results)
-    if my_room.results[0] is None:
-        my_room.results[0] = results
-        print("*********results1", my_room.results[0], "*********")
-        emit("results_received", {"player": "1"})
-    else:
-        my_room.results[1] = results
-        print("*********results2", my_room.results[1], "*********")
-        emit("results_received", {"player": "2"})
-
-
-@socketio.on("acquireResults")
-def on_acquireResults(room_id):
-    try:
-        my_room = next((x for x in rooms if x.id == int(room_id)), None)
-        if my_room.num_clients == 2:
-            if my_room.results[0] is not None and my_room.results[1] is not None:
-                emit("getResults", my_room.results)
-    except Exception as e:
-        print("Error in on_acquireResults:", str(e))
-
-
-@socketio.on("leaveGame")
-def on_leaveGame(room_id):
-    my_room = next((x for x in rooms if x.id == int(room_id)), None)
-    leave_room(my_room.id)
-    my_room.clients.remove(request.sid)
-    my_room.num_clients -= 1
-    emit("user_retired", to=my_room.id)
-
-
-@socketio.on("sendDataToP1")
-def send_data_to_player1(room_id, data):
-    emit("receiveDataFromP2", data, to=room_id)
-
-
-@socketio.on("sendWinnerToP1")
-def send_winner_to_player1(data):
-    room_id = data["roomId"]
-    data = {"p1_text": data["p1_text"], "p1_ImgSrc": data["p1_ImgSrc"]}
-    emit("receiveWinnerFromP2", data, to=room_id)
-
-
-@socketio.on("end")
-def on_end(room_id, player, winner):
-    my_room = next((x for x in rooms if x.id == int(room_id)), None)
-    if my_room is not None:
-        rooms.remove(my_room)
-        emit("endGame", "Successfully deleted room", to=my_room.id)
-    else:
-        send("This room doesn't exsits")
+# @socketio.on("connect")
+# def connect():
+#     emit("status", {"data": "connection established!"})
+#     emit("update_rooms", [room.to_string() for room in rooms])
+#
+#
+# @socketio.on("join_room")
+# def handle_join_room(room_id):
+#     join_room(room_id)
+#
+#
+# @socketio.on("player_leave")
+# def handle_player_leave(room_id, user_id):
+#     leave_room(room_id)
+#     # Optionally, notify other players in the room about the departure
+#     emit("player_left", {"player_id": user_id}, room=room_id)
+#
+#
+# @socketio.on('leave_room')
+# def handle_leave_room(data):
+#     room_id = data.get('room_id')
+#     user_id = data.get('user_id')
+#
+#     my_room = next((x for x in rooms if x.id == int(room_id)), None)
+#     if my_room is not None:
+#         if user_id in my_room.clients:
+#             my_room.clients.remove(user_id)
+#
+#         if not my_room.clients:
+#             rooms.remove(my_room)
+#             socketio.emit("room_deleted", {"room_id": my_room.id})  # Notify all clients
+#
+#
+# @socketio.on("ready_to_start_game")
+# def handle_start_game_request(data):
+#     room_id = data["room_id"]
+#     user_id = data["user_id"]
+#
+#     # Check if the room exists and initialize the players_ready_to_start list if needed
+#     if room_id not in room_states:
+#         room_states[room_id] = {
+#             'player1': None,
+#             'player2_ready': False
+#         }
+#     # Assign the first player to join as player1
+#     if room_states[room_id]['player1'] is None:
+#         room_states[room_id]['player1'] = user_id
+#         print("Player 1:", user_id)
+#     else:
+#         # Assign the second player to join as player2
+#         room_states[room_id]['player2_ready'] = True
+#         print("Player 2:", user_id)
+#
+#         if room_states[room_id]['player1'] is not None and room_states[room_id]['player2_ready']:
+#             # Both players are ready, emit a "start_game" event to both clients in the room
+#             socketio.emit("start_game", {"id": room_id})
+#
+#
+# @socketio.on("start_game_player2")
+# def handle_start_game_player2(room_id, paintings_ids):
+#     print("Received 'start_game_player2' from player 1 in room:", room_id, paintings_ids)
+#     socketio.emit("start_player2", {"room": room_id, "paintings_ids": paintings_ids})
+#
+#
+# @socketio.on("sendResults")
+# def on_sendResults(room_id, results):
+#     print('rooms:', rooms)
+#     my_room = next((x for x in rooms if x.id == int(room_id)), None)
+#     print("***********MY ROOM in results***********", my_room.id, my_room.results)
+#     if my_room.results[0] is None:
+#         my_room.results[0] = results
+#         print("*********results1", my_room.results[0], "*********")
+#         emit("results_received", {"player": "1"})
+#     else:
+#         my_room.results[1] = results
+#         print("*********results2", my_room.results[1], "*********")
+#         emit("results_received", {"player": "2"})
+#
+#
+# @socketio.on("acquireResults")
+# def on_acquireResults(room_id):
+#     try:
+#         my_room = next((x for x in rooms if x.id == int(room_id)), None)
+#         if my_room.num_clients == 2:
+#             if my_room.results[0] is not None and my_room.results[1] is not None:
+#                 emit("getResults", my_room.results)
+#     except Exception as e:
+#         print("Error in on_acquireResults:", str(e))
+#
+#
+# @socketio.on("leaveGame")
+# def on_leaveGame(room_id):
+#     my_room = next((x for x in rooms if x.id == int(room_id)), None)
+#     leave_room(my_room.id)
+#     my_room.clients.remove(request.sid)
+#     my_room.num_clients -= 1
+#     emit("user_retired", to=my_room.id)
+#
+#
+# @socketio.on("sendDataToP1")
+# def send_data_to_player1(room_id, data):
+#     emit("receiveDataFromP2", data, to=room_id)
+#
+#
+# @socketio.on("sendWinnerToP1")
+# def send_winner_to_player1(data):
+#     room_id = data["roomId"]
+#     data = {"p1_text": data["p1_text"], "p1_ImgSrc": data["p1_ImgSrc"]}
+#     emit("receiveWinnerFromP2", data, to=room_id)
+#
+#
+# @socketio.on("end")
+# def on_end(room_id, player, winner):
+#     my_room = next((x for x in rooms if x.id == int(room_id)), None)
+#     if my_room is not None:
+#         rooms.remove(my_room)
+#         emit("endGame", "Successfully deleted room", to=my_room.id)
+#     else:
+#         send("This room doesn't exsits")
 
 
 # UTILITY FUNCTIONS

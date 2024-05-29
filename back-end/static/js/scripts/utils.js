@@ -20,7 +20,7 @@ function no_upper_no_spaces(string) {
 }
 function normalizeKPs(poses, width, height) {
     return (poses?.[0]?.keypoints || [])
-          .filter((kp) => kp.score > 0.3)
+          .filter((kp) => kp.score > 0.2)
           .map(({ x, y, score, name }) => ({
               x: x / width,
               y: y / height,
@@ -61,17 +61,8 @@ function createPoseCanvas(canvas) {
 
     function drawSegment({ pointA, pointB, color = "white" }) {
         if (pointA && pointB) {
-            const lineWidth = 10; // Width of the white stroke
+            // const lineWidth = 10; // Width of the white stroke
             const colorLineWidth = 6; // Width of the colored stroke
-
-            // Draw the white stroke
-            ctx.beginPath();
-            ctx.moveTo(pointA.x * canvas.width, pointA.y * canvas.width);
-            ctx.lineTo(pointB.x * canvas.width, pointB.y * canvas.width);
-            ctx.lineWidth = lineWidth;
-            ctx.strokeStyle = "white";
-            ctx.stroke();
-
             // Draw the colored stroke
             ctx.beginPath();
             ctx.moveTo(pointA.x * canvas.width, pointA.y * canvas.width);
@@ -93,7 +84,7 @@ function createPoseCanvas(canvas) {
             ctx.restore();
         },
 
-        drawSkeleton: function({ keypoints, color = "blue" }) {
+        drawSkeleton: function({ keypoints, color =  "rgba(255, 255, 255, 0.5)" }) {
             keypoints.forEach(({ x, y }) => {
                 drawPoint({ x, y, r: 6 });
             });
@@ -202,8 +193,9 @@ function createPictureLoader(imgCanvas) {
         const imagePoses = await strongDetector.estimatePoses(img);
 
         const imageKPs = normalizeKPs(imagePoses, img.width, img.height);
-
+        console.log(imageKPs)
         const imageKPNames = imageKPs.map((kp) => kp.name);
+        console.log(imageKPNames)
 
         const image_angles= imgCanvas.calculateAngles(imageKPNames, imageKPs) //flippedKPs_reverted);
 
@@ -428,111 +420,6 @@ const initGame_solo = async (levelId, poses, video, camCanvas, imgCanvas, user_i
     return nextRound();
 };
 
-const initGame_versus = async (socket, roomId, paintings_ids, poses, nRound, video, camCanvas, imgCanvas, user_id) => {
-    let first = true;
-    let round = 0;
-    let pose = 0;
-    let userVideoList = [];
-    let roundResults = {time: 0, pose: 0};
-    let gameResults = [];
-
-    const detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet);
-    const pictureLoad = await createPictureLoader(imgCanvas);
-
-    const nextPose = async () => {
-        const id = paintings_ids[pose];
-        const { imageKPNames, image_angles } = await pictureLoad(id);
-
-        const imgQueue = queueGenerator(Config.VIDEO_SECONDS * Config.FRAME_RATE);
-
-        const gameLoop = setInterval(async () => {
-            $("#game-loading").remove();
-            $("#main").show();
-            const computedDistance = await compute_match(detector, video, imageKPNames, image_angles, camCanvas)
-
-            let next = false;
-
-            if (first) {
-                resetTimer();
-                startTimer();
-                first = false;
-            }
-            if (imgQueue.isFull() && computedDistance >= Config.MATCH_LEVEL) {
-                roundResults.pose++;
-                roundResults.time += stringTimeToSeconds(document.getElementById("timer").innerHTML);
-                next = true;
-            }
-            if (Config.TIME_LIMIT <= document.getElementById("timer").innerHTML) {
-                next = true;
-                roundResults.time += stringTimeToSeconds(Config.TIME_LIMIT);
-            }
-            if (next) {
-                resetTimer();
-                clearInterval(gameLoop);
-                pose++;
-                userVideoList.push({ id, frameList: imgQueue.queue });
-                imgQueue.clear();
-                if (pose < poses) {
-                    await nextPose();
-                } else if (round >= nRound - 1) {
-                    gameResults.push(roundResults);
-
-                    const formData = new FormData();
-
-                    paintings_ids.forEach((pictureId) => {
-                        console.log('pictureId:',pictureId)
-                        formData.append("picture_ids[]", pictureId);
-                    });
-                    userVideoList.forEach(({ id, frameList }) => {
-                        frameList.forEach((frame, j) => {
-                            formData.append(`frames_${id}[]`, frame, `frame_${id}_${j}.jpg`);
-                        });
-                    });
-                    formData.append("user_id", user_id);
-                    // create the message box element
-                    const messageBox = createMessageBox()
-
-                    try {
-                        const video = await postVideo(formData);
-                        socket.emit("sendResults", roomId, gameResults);
-
-                        socket.on("results_received", async (player) => {
-                            // remove the message box from the page after the video is posted
-                            messageBox.remove();
-                            // console.log("Results received", roomId, player, player["player"], paintings_ids);
-                            localStorage.setItem("retired", "false");
-
-                            location.href = `/end?id=${video.id}&player=${player["player"]}&user_id=${user_id}&roomId=${roomId}&paintings_ids=${paintings_ids}&poses=${poses}`;
-
-                        });
-                    } catch (e) {
-                        // remove the message box from the page after the video is posted
-                        messageBox.remove();
-                        console.error(e);
-                        localStorage.setItem("retired", "false");
-                        location.href = `/end?id=${video.id}&player=P1&user_id=${user_id}`;
-                    }
-                } else {
-                    round++;
-                    pose = 0;
-                    gameResults.push(roundResults);
-                    roundResults = { time: 0, pose: 0 };
-                    alert("Round " + (round + 1) + " begins!"); //DA TOGLIERE?
-                    await nextPose();
-                }
-            }
-            const base64image = camCanvas.canvas.toDataURL("image/jpeg", 0.2);
-            const response = await fetch(base64image);
-            const imageBlob = await response.blob();
-            imgQueue.enqueue(imageBlob);
-        }, 1000 / Config.FRAME_RATE);
-        first = true;
-        startTimer();
-        return gameLoop;
-    };
-    return nextPose();
-};
-
 async function compute_match(detector, video, imageKPNames, image_angles, camCanvas) {
     const videoPoses = await detector.estimatePoses(video);
     const videoKPs = normalizeKPs(videoPoses, video.width, video.height);
@@ -599,7 +486,6 @@ function createMessageBox() {
 }
 export {
     initGame_solo,
-    initGame_versus,
     createPoseCanvas,
     stringTimeToSeconds,
       picture_ids_for_level

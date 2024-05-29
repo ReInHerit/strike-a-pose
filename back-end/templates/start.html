@@ -96,17 +96,17 @@
           <div class="container" id="container-rooms">
             <div id="rooms-list">
               <div id="rooms-title">
-                <h4>ROOMS</h4></div>
+                <h4>STRIKE A POSE</h4></div>
 
               <table id="rooms-table" class="table table-striped table-bordered table-responsive">
                 <thead id="room_table_header">
                 <tr>
-                  <th scope="col">#</th>
-                  <th scope="col">ROOM ID</th>
+                  <th scope="col"></th>
+                  <th scope="col"></th>
 {#                  <th scope="col">MODE</th>#}
                   <th scope="col">POSES</th>
 {#                  <th scope="col">ROUNDS</th>#}
-                  <th scope="col">LEVEL</th>
+                  <th scope="col">CHALLENGE</th>
                   <th scope="col">PLAY</th>
                 </tr>
                 </thead>
@@ -117,57 +117,25 @@
               <table id="add_room_row" class="table table-striped table-bordered table-responsive">
                 <tbody>
                 <tr>
-                  <td id="add-room-title">Mirror the Pose</td>
-{#                  <td>#}
-{#                    <div id="players_mode" class="input-group">#}
-{#                      {{ form.clients(class="custom-select enabled", id="nPlayers_setted", value=clients) }}#}
-{#                    </div>#}
-{#                  </td>#}
+                  <td id="add-room-title">SET UP YOUR CHALLENGE</td>
                   <td>
                     <div id="poses" class="input-group">
                       {{ form.n_pose(class="custom-select enabled", id="nPose_setted", value=n_pose) }}
                     </div>
                   </td>
-{#                  <td>#}
-{#                    <div id="rounds" class="input-group">#}
-{#                      {{ form.n_round(class="custom-select disabled", id="nRound_setted", value=n_round) }}#}
-{#                    </div>#}
-{#                  </td>#}
                   <td>
                     <div class="input-group">
                       {{ form.levels(class="custom-select enabled", id="level_setted", value=levels) }}
                     </div>
                   </td>
                   <td>
-                    <a id="add-room-btn" class="btn"><i class="fa-solid fa-square-plus icon-color"></i></a>
+                    <a id="add-room-btn" class="btn"><i class="fa-solid fa-play icon-color"></i></a>
                   </td>
                 </tr>
-                <caption>Configure the room settings according to your preferences. Select between the SOLO and VERSUS modes, indicating the number of Poses (Paintings) to replicate and the desired LEVEL. If opting for VERSUS mode, specify the number of ROUNDS, representing the times each participant will replicate the set of Poses. Once configured, click the "+" button to generate a new room.</caption>
+                <caption>Configure your challenge settings according to your preferences. Select the number of Poses (Paintings) to replicate and the desired Challenge. Once configured, click the Play button on the right to start the game</caption>
 
                 </tbody>
               </table>
-{#              <table id="join_room_row" class="table table-striped table-bordered table-responsive">#}
-{#                <caption>Insert your friend's room id and click the button to join a room.</caption>#}
-{#                <tbody>#}
-{#                <tr>#}
-{#                  <td id="join-room-title">JOIN ROOM</td>#}
-{#                  <td></td>#}
-{#                  <td>ROOM ID:</td>#}
-{#                  <td>#}
-{#                    <input type="text" class="input-group" id="roomid_textInput" name="textInput">#}
-{#                    <div id="popup" class="popup"></div>#}
-{#                  </td>#}
-{#                  <td>#}
-{##}
-{#                  </td>#}
-{#                  <td>#}
-{#                    <a id="join-room-btn" class="btn disabled"><i#}
-{#                      class="fa-solid fa-right-to-bracket icon-color"></i></a>#}
-{#                  </td>#}
-{#                </tr>#}
-{#                </tbody>#}
-{#              </table>#}
-              <!-- Room list with titles and join buttons will appear here -->
             </div>
           </div>
         </div>
