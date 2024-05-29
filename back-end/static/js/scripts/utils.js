@@ -20,7 +20,7 @@ function no_upper_no_spaces(string) {
 }
 function normalizeKPs(poses, width, height) {
     return (poses?.[0]?.keypoints || [])
-          .filter((kp) => kp.score > 0.3)
+          .filter((kp) => kp.score > 0.2)
           .map(({ x, y, score, name }) => ({
               x: x / width,
               y: y / height,

@@ -57,7 +57,9 @@ $(async () => {
 
         // Fetch the video and send it as an attachment
         try {
-            const videoBlob = await fetch(`${Config.SERVER_URL}${video.path}`).then((response) => response.blob());
+            const video_path = video.path.startsWith("back-end/") ? video.path.replace("back-end/", "") : video.path;
+
+            const videoBlob = await fetch(`${Config.SERVER_URL}${video_path}`).then((response) => response.blob());
             console.log(videoBlob.size)
             // Send the video as an attachment
             const formData = new FormData();

@@ -37,15 +37,35 @@ players_ready_to_start = {}
 room_states = {}
 rooms = []
 rooms_to_delete = []
-video_directory = 'static/videos'
+
+cwd = os.getcwd()
+print('///////////////////////////CWD///////////////////////////', cwd)
+server = os.getenv('SERVER_URL')
+privacy_policy_url = os.getenv('PRIVACY_POLICY_URL')
+smtp_username = os.getenv('SMTP_USERNAME')
+smtp_password = os.getenv('SMTP_PASSWORD')
+smtp_server = 'smtp.gmail.com'
+print('///////////////////////////SERVER///////////////////////////', server, privacy_policy_url)
+# Set video_directory based on the current working directory
+if os.path.exists(os.path.join(cwd, 'static')):
+    video_directory = 'static/videos'
+    static_assets_directory = 'static/assets'
+elif os.path.exists(os.path.join(cwd, 'back-end')):
+    video_directory = 'back-end/static/videos'
+    static_assets_directory = 'back-end/static/assets'
+elif os.path.exists(os.path.join(os.path.dirname(cwd), 'static')):
+    video_directory = '../static/videos'
+    static_assets_directory = '../static/assets'
+else:
+    print("Neither 'static' nor 'back-end' directories exist in the current working directory.")
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif'}
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_SERVER'] = smtp_server
 app.config['MAIL_PORT'] = 465  # Use 465 for SSL, 587 for TLS
 app.config['MAIL_USE_SSL'] = True  # Set to True for SSL, False for TLS
 app.config['MAIL_USE_TLS'] = False  # Set to True for TLS, False for SSL
-app.config['MAIL_USERNAME'] = os.getenv('SMTP_USERNAME')  # Your Gmail username
-app.config['MAIL_PASSWORD'] = os.getenv('SMTP_PASSWORD')  # Your Gmail password
-app.config['MAIL_DEFAULT_SENDER'] = os.getenv('SMTP_USERNAME')  # Your default sender address
+app.config['MAIL_USERNAME'] = smtp_username  # Your Gmail username
+app.config['MAIL_PASSWORD'] = smtp_password  # Your Gmail password
+app.config['MAIL_DEFAULT_SENDER'] = smtp_username  # Your default sender address
 mail = Mail(app)
 select_signup_tab = True
 
@@ -617,7 +637,7 @@ def post_video():
     bottom_row_height = 51
     video_width = 1024
     # Load and resize the logo image
-    title_section = cv2.imread('static/assets/video_logo2.png')
+    title_section = cv2.imread(static_assets_directory + '/video_logo2.png')
     title_section_flipped = cv2.flip(title_section, 1)
     center_row = np.zeros((center_row_height, video_width, 3), np.uint8)
     center_row[5:10, :] = (0, 157, 224)
@@ -626,7 +646,9 @@ def post_video():
 
     for picture_id in request.form.getlist('picture_ids[]'):
         picture = Picture.query.get(int(picture_id))
-        picture_image = cv2.imread(picture.path)
+        picture_path = os.path.join(static_assets_directory, picture.path.replace('static/assets/', '', 1))
+        print('/////////PICTURE///////////', picture_path, '////////////////////////////////////////////////////////////')
+        picture_image = cv2.imread(picture_path)
         picture_aspect_ratio = picture_image.shape[1] / picture_image.shape[0]
 
         if picture_aspect_ratio > 1:
@@ -702,24 +724,20 @@ def send_video():
         paintings_info_str = '\n'.join(
             [f"Artwork {i + 1}: {info['author_name']} - {info['artwork_name']}: {info['description']}<br/>" for i, info in
              enumerate(paintings_info)])
-        print('////////////////////////////////////////////////////', paintings_info_str)
         # Attach the video file
         video = request.files['video']
         video_data = video.read()
         # Define your email server and credentials
-        smtp_server = 'smtp.gmail.com'
+        # smtp_server = 'smtp.gmail.com'
         smtp_port = 587
-        smtp_username = os.getenv('SMTP_USERNAME')
-        smtp_password = os.getenv('SMTP_PASSWORD')
-        print('////////////////////////////////////////////////////', smtp_username, smtp_password)
+
         # Create a message object
         msg = MIMEMultipart()
-        msg['From'] = os.getenv('SMTP_USERNAME')
+        msg['From'] = smtp_username
         msg['To'] = user_email
         msg['Subject'] = 'Your Strike-a-pose Video'
-        print('////////////////////////////////////////////////////', user_email, msg['To'])
-        # Add a body to the email (optional)
-        # body = f'\n\nDear User,\n\nThank you for participating in this engagement experience with art. We are delighted to share with you the video capturing your graceful poses inspired by some of the masterpieces in our collection. Your interaction can inspire you for a deeper exploration of the following artworks:\n\n{paintings_info_str}\n\nFeel free to enjoy and share your experience in your social media.\n\nBest regards,\nThe ReInHerit Consortium'
+        print('////////////////////////////////////////////////////', user_email)
+
         body = f"""
                 <html>
                 <body>
@@ -733,21 +751,27 @@ def send_video():
                 </body>
                 </html>
                 """
-        print('////////////////////////////////////////////////////')
+        print(privacy_policy_url)
+        body += f'''
+            <div style="font-size: 0.8em; color: #888;">
+                <br>You received this e-mail because, while using Strike-A-Pose, you requested that the results be e-mailed to you. 
+                As specified in the privacy policy you accepted, the head poses captured have been used to create the attached 
+                final images. No files or images are stored in our system, and this e-mail will be promptly removed from our 
+                servers after the result video is generated and sent to you. We do not share your body images or personal 
+                information with any third-party services. Please see the <a href="{privacy_policy_url}"> Privacy Policy</a> for more details.
+            </div>
+            '''
+
         msg.attach(MIMEText(body, 'html', 'utf-8'))
-        print('//////////body attached//////////')
         # Attach the video file
         video_attachment = MIMEApplication(video_data, Name='video.mp4')  # Set the desired filename
         video_attachment['Content-Disposition'] = 'attachment; filename="strike-a-pose-video.mp4"'
         msg.attach(video_attachment)
-        print('//////////video attached//////////')
         # Create an SMTP session
         smtp = smtplib.SMTP(smtp_server, smtp_port)
         smtp.starttls()
         smtp.set_debuglevel(2)
-        print('//////////smtp session created//////////')
         smtp.login(smtp_username, smtp_password)
-        print('//////////smtp session login//////////')
         # Send the email
         try:
             smtp.sendmail(msg['From'], user_email, msg.as_string())
