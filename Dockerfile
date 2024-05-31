@@ -1,5 +1,5 @@
 # Use tiangolo/uwsgi-nginx-flask as the base image
-FROM tiangolo/uwsgi-nginx-flask:python3.11
+FROM --platform=linux/amd64 tiangolo/uwsgi-nginx-flask:python3.11
 
 # Set the working directory in the container
 WORKDIR /app
