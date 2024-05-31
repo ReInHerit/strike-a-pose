@@ -2,8 +2,8 @@ import { createPoseCanvas, initGame_solo } from "./scripts/utils.js";
 import { Config } from "./scripts/config.js";
 import { getLevel } from "./scripts/fetchUtils.js";
 
-const serverUrl = Config.SERVER_URL; // `${window.location.protocol}//${window.location.hostname}`;
-let socket = io.connect(serverUrl);
+// const serverUrl = Config.SERVER_URL; // `${window.location.protocol}//${window.location.hostname}`;
+// let socket = io.connect(serverUrl);
 let roomId;
 let user_id;
 const width = 1024;

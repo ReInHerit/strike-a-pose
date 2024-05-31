@@ -21,7 +21,7 @@ from sqlalchemy import or_, func
 from sqlalchemy.exc import IntegrityError
 from werkzeug.utils import secure_filename
 
-from app import app, socketio, db
+from app import app, db # socketio,
 from models import *
 from forms import *
 import smtplib

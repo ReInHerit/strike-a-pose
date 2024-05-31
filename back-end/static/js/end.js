@@ -2,8 +2,8 @@ import { Config } from "./scripts/config.js";
 import { getVideo } from "./scripts/fetchUtils.js";
 import { stringTimeToSeconds } from "./scripts/utils.js";
 
-const serverUrl = Config.SERVER_URL // `${window.location.protocol}//${window.location.hostname}`;
-const socket = io.connect(serverUrl);
+// const serverUrl = Config.SERVER_URL // `${window.location.protocol}//${window.location.hostname}`;
+// const socket = io.connect(serverUrl);
 let roomId;
 let user_id;
 let paintings_ids;
