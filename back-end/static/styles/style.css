@@ -411,9 +411,9 @@ caption {
 .div_end, #privacyPopup  {
     padding: 20px;
     background-color: white;
-    width: 50%;
-    min-width: 400px;
-    max-width: 533.33px;
+    width: 95vw;
+    min-width: 350px;
+    max-width: 600px;
 
 }
 

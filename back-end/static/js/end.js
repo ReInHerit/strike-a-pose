@@ -139,7 +139,8 @@ $(async () => {
         window.location = `/logout?user_id=${user_id}`;
 
     };
-    window.onbeforeunload = async function() {
+    window.addEventListener('popstate', async function(event){
+        event.preventDefault();
         console.log("beforeunload", videoDeleted)
         if (!videoDeleted) {
             console.log("deleting video")
@@ -147,5 +148,15 @@ $(async () => {
             videoDeleted = true; // Set a flag to avoid deleting multiple times
         }
         await deleteRoom();
-    };
+            window.logout();
+    })
+    // window.onbeforeunload = async function() {
+    //     console.log("beforeunload", videoDeleted)
+    //     if (!videoDeleted) {
+    //         console.log("deleting video")
+    //         await deleteVideo();
+    //         videoDeleted = true; // Set a flag to avoid deleting multiple times
+    //     }
+    //     await deleteRoom();
+    // };
 });

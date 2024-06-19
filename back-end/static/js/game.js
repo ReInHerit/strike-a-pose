@@ -2,16 +2,17 @@ import { createPoseCanvas, initGame_solo } from "./scripts/utils.js";
 import { Config } from "./scripts/config.js";
 import { getLevel } from "./scripts/fetchUtils.js";
 
-// const serverUrl = Config.SERVER_URL; // `${window.location.protocol}//${window.location.hostname}`;
-// let socket = io.connect(serverUrl);
 let roomId;
 let user_id;
 const width = 1024;
-const aspectRatio = 1;
+const aspectRatio = 1.77;
 
 $(async () => {
     const video = $("#video").get(0);
-
+    const camCanvas = createPoseCanvas($("#camCanvas").get(0));
+    const cCanvas = document.getElementById("camCanvas");
+    const camContext = cCanvas.getContext("2d");
+    const imgCanvas = createPoseCanvas($("#imgCanvas").get(0));
     console.log("1) Video dimensions:", video.videoWidth, "x", video.videoHeight);
     // await setCameraDimensions(1024, 1, video);
     const constraints = {
@@ -25,8 +26,21 @@ $(async () => {
     try {
         video.srcObject = await navigator.mediaDevices.getUserMedia(constraints);
         await new Promise((resolve) => {
-            video.onloadedmetadata = () => {
-                resolve();
+            video.onloadedmetadata = async () => {
+                // resolve();
+                const queryParams = new URLSearchParams(window.location.search);
+                console.log("4) Video dimensions:", video.videoWidth, "x", video.videoHeight);
+                const gameMode = queryParams.get("mode");
+                const initGame = async () => {
+                    await initGameIfNeeded(queryParams, gameMode, video, camCanvas, imgCanvas, camContext);
+                };
+                // Check if TensorFlow is loaded
+                if (typeof tf === "undefined") {
+                    console.log("TensorFlow is not loaded yet. Waiting...");
+                    setTimeout(initGame, 1000); // Adjust the delay time as needed
+                } else {
+                    await initGame();
+                }
             };
         });
         await video.play(); // Start playing the video
@@ -36,30 +50,19 @@ $(async () => {
     } catch (error) {
         console.error("Error accessing webcam:", error);
     }
-    const camCanvas = createPoseCanvas($("#camCanvas").get(0));
-    const cCanvas = document.getElementById("camCanvas");
-    const camContext = cCanvas.getContext("2d");
-    const imgCanvas = createPoseCanvas($("#imgCanvas").get(0));
-    video.addEventListener('loadedmetadata', async() => {
+    console.log('init')
+    // Function to draw the video frame onto the canvas
+    const drawVideoFrame = () => {
+        camContext.drawImage(video, 0, 0, cCanvas.width, cCanvas.height);
+        requestAnimationFrame(drawVideoFrame); // Schedule the next frame
+    };
 
-        const queryParams = new URLSearchParams(window.location.search);
-        console.log("4) Video dimensions:", video.videoWidth, "x", video.videoHeight);
-        const gameMode = queryParams.get("mode");
-        const initGame = async () => {
-            await initGameIfNeeded(queryParams, gameMode, video, camCanvas, imgCanvas, camContext);
-        };
-        // Check if TensorFlow is loaded
-        if (typeof tf === "undefined") {
-            console.log("TensorFlow is not loaded yet. Waiting...");
-            setTimeout(initGame, 1000); // Adjust the delay time as needed
-        } else {
-            await initGame();
-        }
-    });
+    // Start drawing video frames onto the canvas
+    drawVideoFrame();
+
 
     console.log("3) Video dimensions:", video.videoWidth, "x", video.videoHeight);
-    const webcam = new Webcam(video, "user", cCanvas);
-    await webcam.stream();
+
 });
 
 
@@ -77,21 +80,3 @@ function adjustSoloLayout() {
     document.getElementById("score_container").style.alignContent = "center";
 }
 
-
-// window.onbeforeunload = function() {
-//     const retired = localStorage.getItem("retired") === "true";
-//     if (retired) {
-//         const queryParams = new URLSearchParams(window.location.search);
-//         const mode = queryParams.get("mode");
-//         if (mode && mode.normalize() === "versus" && socket !== undefined) {
-//             socket.emit("leaveGame", roomId);
-//             console.log("Disconnect from game");
-//             delay(1000);
-//         }
-//     }
-// };
-//
-// function delay(ms) {
-//     var start = +new Date;
-//     while ((+new Date - start) < ms) ;
-// }

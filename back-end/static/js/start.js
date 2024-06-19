@@ -5,11 +5,12 @@ import { picture_ids_for_level } from "./scripts/utils.js";
 const serverUrl = Config.SERVER_URL;
 // const serverUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
 console.log("serverUrl:", serverUrl);
-// const socket = io.connect(window.location.origin);
-// const waitingScreen = $("#waiting-screen")[0];
-// const players_input = $("#nPlayers_setted");
-// const poses_input = $("#nPose_setted")[0];
-// const rounds_input = $("#nRound_setted")[0];
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent.toLowerCase());
+    if (isSafari) {
+        alert("Kindly utilize an alternative browser for accessing the game. Safari is not compatible. Recommended browsers include Chrome, Firefox, and Edge.");
+    } else {
+        console.log("Not Safari")
+    }
 const addRoomBtn = $("#add-room-btn");
 // const joinRoomBtn = $("#join-room-btn");
 // const join_room_input = $("#roomid_textInput");
@@ -24,7 +25,6 @@ let level;
 let poses;
 $(document).ready(async function() {
 
-
     addRoomBtn.on("click", function() {
         // let room_id;
         const row = $(this).closest("tr");
@@ -33,7 +33,6 @@ $(document).ready(async function() {
         createRoom(poses, level);
 
     });
-
 
     // Function to show the privacy policy popup
     function showPrivacyPopup() {
@@ -194,14 +193,7 @@ $(document).ready(async function() {
         window.location = `/logout?user_id=${uniqueId}`;
 
     };
-window.onload = function() {
-    var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-    if (isSafari) {
-        alert("Kindly utilize an alternative browser for accessing the game. Safari is not compatible. Recommended browsers include Chrome, Firefox, and Edge.");
-    } else {
-        console.log("Not Safari")
-    }
-};
+
 window.onbeforeunload = null
 });
 

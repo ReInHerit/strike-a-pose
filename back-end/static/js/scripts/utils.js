@@ -4,6 +4,7 @@ import { getLevel, getPicture, getAllPictures, postVideo } from "./fetchUtils.js
 let startTime;
 let elapsedTime = 0;
 let timerInterval;
+
 // Utility Functions
 async function picture_ids_for_level(level) {
     const pictures_data = await getAllPictures();
@@ -181,17 +182,12 @@ async function createImage(src) {
     }
 }
 
-function createPictureLoader(imgCanvas) {
+function createPictureLoader(detector, imgCanvas) {
     return async (id) => {
-        const strongDetector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet, {
-            modelType: poseDetection.movenet.modelType.SINGLEPOSE_THUNDER,
-        });
-
         const picture = await getPicture(id);
         $("#artwork_label").text(picture.artwork_name + " - " + picture.author_name);
         const img = await createImage(`${Config.SERVER_URL}${picture.path}`);
-        const imagePoses = await strongDetector.estimatePoses(img);
-
+        const imagePoses = await detector.estimatePoses(img);
         const imageKPs = normalizeKPs(imagePoses, img.width, img.height);
         console.log(imageKPs)
         const imageKPNames = imageKPs.map((kp) => kp.name);
@@ -297,7 +293,7 @@ const updateScoreAndCanvas = (computedDistancePercentage, camCanvas, video, filt
 
     $score.text(`${computedDistancePercentage}%`);
     camCanvas.drawImage(video);
-
+    console.log(Config.DEBUG)
     adjustCanvasAspectRatio(camCanvas.canvas, video);
     if (Config.DEBUG) {
         drawImageAndSkeleton(camCanvas, video, filteredVideoKPs);
@@ -311,10 +307,17 @@ function adjustCanvasAspectRatio(canvas, source) {
     const $main = $("#main");
     const $canvas = $(canvas);
     const $container = $('.canvas-container')
-    const source_width = source.width;
-    const source_height = source.height;
+    let source_width, source_height;
+    if (source.width > 0 && source.height > 0){
+        source_width = source.width;
+        source_height = source.height;
+    } else {
+        source_width = source.videoWidth;
+        source_height = source.videoHeight;
+    }
+
     const aspectRatio = source_width / source_height;
-    console.log(maxWidth, maxHeight)
+    console.log(maxWidth, maxHeight, aspectRatio, windowAspectRatio, $main, $canvas, $container, source_width, source_height)
     let width, height;
     if (windowAspectRatio > 1) {
         $main.css({ "flex-direction": "row", "align-items": "center", "width": "100%", "height": "80%" });
@@ -352,23 +355,23 @@ const initGame_solo = async (levelId, poses, video, camCanvas, imgCanvas, user_i
     const level_picture_ids = await picture_ids_for_level(level);
     let round = 0;
     let userVideoList = [];
-
-    const detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet);
-    const pictureLoad = await createPictureLoader(imgCanvas);
+    const detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet, {
+            modelType: poseDetection.movenet.modelType.SINGLEPOSE_THUNDER,
+        });
+    const pictureLoad = await createPictureLoader(detector, imgCanvas);
     let idRandom = level_picture_ids.sort(() => Math.random() - 0.5);
 
-    const nPictures = Math.min(idRandom.length, parseInt(poses));//Config.MAX_PICTURES_SOLO
+    const nPictures = Math.min(idRandom.length, parseInt(poses));
 
-    const userId = user_id//localStorage.getItem("userId");
+    const userId = user_id;
     const nextRound = async () => {
         const id = idRandom[round];
         const { imageKPNames, image_angles } = await pictureLoad(id);
-
         const imgQueue = queueGenerator(Config.VIDEO_SECONDS * Config.FRAME_RATE);
-
+        $("#main").show();
+        $("#game-loading").remove();
         const gameLoop = setInterval(async () => {
-            $("#game-loading").remove();
-            $("#main").show();
+
             const computedDistance = await compute_match(detector, video, imageKPNames, image_angles, camCanvas)
 
             if (imgQueue.isFull() && computedDistance >= Config.MATCH_LEVEL) {
@@ -421,8 +424,10 @@ const initGame_solo = async (levelId, poses, video, camCanvas, imgCanvas, user_i
 };
 
 async function compute_match(detector, video, imageKPNames, image_angles, camCanvas) {
+    console.log('before estimate poses')
     const videoPoses = await detector.estimatePoses(video);
-    const videoKPs = normalizeKPs(videoPoses, video.width, video.height);
+    console.log('after estimate poses')
+    const videoKPs = normalizeKPs(videoPoses, video.videoWidth, video.videoHeight);
     const videoKpsNames = videoKPs.map((kp) => kp.name);
     const filteredVideoKPs = videoKPs.filter((kp) => imageKPNames.includes(kp.name));
     const cam_angles = camCanvas.calculateAngles(videoKpsNames, videoKPs);
