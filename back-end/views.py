@@ -44,8 +44,7 @@ rooms_to_delete = []
 cwd = os.getcwd()
 print('///////////////////////////CWD///////////////////////////', cwd)
 server = os.getenv('SERVER_URL')
-# privacy_policy_url = os.getenv('PRIVACY_POLICY_URL')
-privacy_policy_url = server + '/policy'
+privacy_policy_url = os.getenv('PRIVACY_POLICY_URL')
 smtp_username = os.getenv('SMTP_USERNAME')
 smtp_password = os.getenv('SMTP_PASSWORD')
 smtp_server = 'smtp.gmail.com'
@@ -149,17 +148,6 @@ def start_post():
     return json_response
 
 
-# @app.route("/room", methods=["POST"])
-# def room():
-#     id = request.json.get("id", None)
-#     level = request.json.get("level", None)
-#     n = request.json.get("n", None)
-#     my_room = next((x for x in rooms if x.id == int(id)), None)
-#     my_room.level = level
-#     my_room.n = n
-#     return jsonify(my_room.to_string())
-
-
 @app.route("/delete/room/<id>", methods=["GET"])
 def delete_room(id):
     print('/////////DELETE///////////', id, '////////////////////////////////////////////////////////////')
@@ -169,28 +157,6 @@ def delete_room(id):
     if my_room is not None:
         rooms.remove(my_room)
         return jsonify({"message": "Room deleted successfully"}), 200
-
-
-# @app.route("/join/<id>", methods=["GET"])
-# def join(id):
-#     user_id = request.args.get("user_id")
-#     my_room = next((x for x in rooms if x.id == int(id)), None)
-#     if my_room is None:
-#         return jsonify("This room doesn't exist"), 400  # Return an error if the room doesn't exist
-#
-#     if user_id in my_room.clients:
-#         return jsonify(my_room.to_string())
-#
-#     if len(my_room.clients) == 0:
-#         return jsonify("There is no host in the room"), 400
-#     my_room.clients.append(user_id)
-#     my_room.num_clients += 1
-#     if len(my_room.clients) == 2:
-#         my_room.free = False
-#     else:
-#         my_room.free = True
-#     socketio.emit("join", {"room_data": my_room.to_string(), "joiner": user_id})  # Notify all clients
-#     return jsonify(my_room.to_string())
 
 
 @app.route("/logout", methods=["GET"])
