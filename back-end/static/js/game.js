@@ -6,12 +6,16 @@ let roomId;
 let user_id;
 const width = 1024;
 const aspectRatio = 1.77;
+const loading_text = document.querySelector('#game-loading .text-in');
+
 const detectorPromise = new Promise((resolve) => {
     window.addEventListener('load', async function() {
         console.log('loading detector')
+        loading_text.textContent = 'Loading detector...';
         window.detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet, {
             modelType: poseDetection.movenet.modelType.SINGLEPOSE_THUNDER,
         });
+        loading_text.textContent = 'Detector loaded';
         console.log('detector loaded')
         resolve(); // Resolve the promise
     });
@@ -22,6 +26,7 @@ $(async () => {
     const camCanvas = createPoseCanvas($("#camCanvas").get(0));
     const cCanvas = document.getElementById("camCanvas");
     const camContext = cCanvas.getContext("2d");
+    loading_text.textContent = 'Loading artwork...';
     const imgCanvas = createPoseCanvas($("#imgCanvas").get(0));
     console.log("1) Video dimensions:", video.videoWidth, "x", video.videoHeight);
     // await setCameraDimensions(1024, 1, video);
@@ -41,6 +46,7 @@ $(async () => {
                 const queryParams = new URLSearchParams(window.location.search);
                 console.log("4) Video dimensions:", video.videoWidth, "x", video.videoHeight);
                 const gameMode = queryParams.get("mode");
+                loading_text.textContent = 'Getting data...';
                 const initGame = async () => {
                     await initGameIfNeeded(queryParams, gameMode, video, camCanvas, imgCanvas, camContext);
                 };

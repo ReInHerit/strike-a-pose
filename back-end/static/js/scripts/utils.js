@@ -4,6 +4,7 @@ import { getLevel, getPicture, getAllPictures, postVideo } from "./fetchUtils.js
 let startTime;
 let elapsedTime = 0;
 let timerInterval;
+let loading_text;
 
 async function picture_ids_for_level(level) {
     const pictures_data = await getAllPictures();
@@ -351,6 +352,8 @@ function drawImageAndSkeleton(canvas, source, keypoints) {
 const initGame_solo = async (levelId, poses, video, camCanvas, imgCanvas, user_id) => {
     console.log('0')
     const detector = window.detector
+    loading_text = document.querySelector('#game-loading .text-in');
+    loading_text.textContent = 'Initializing';
     console.log('utils', detector)
     const level = await getLevel(levelId);
     const level_picture_ids = await picture_ids_for_level(level);
@@ -360,6 +363,7 @@ const initGame_solo = async (levelId, poses, video, camCanvas, imgCanvas, user_i
 
     console.log('2')
     const pictureLoad = await createPictureLoader(detector, imgCanvas);
+    loading_text.textContent = 'Game starts!';
     let idRandom = level_picture_ids.sort(() => Math.random() - 0.5);
 
     const nPictures = Math.min(idRandom.length, parseInt(poses));

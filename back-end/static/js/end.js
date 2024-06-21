@@ -76,18 +76,19 @@ $(async () => {
             document.querySelector('#email-loading .text-in').textContent = 'Video sent!';
             // loading.style.display = 'none !important';
             loading.classList.remove('d-flex');
-            loading.style.display = 'none !important';
+            setTimeout(() => {
+                loading.style.display = 'none';
+            }, 1500);
         })
         .catch((error) => {
             alert(error.message);
             console.error(error);
-            loading.style.display = 'none !important';
+            loading.style.display = 'none';
         });
         } catch (error) {
             console.error(error);
-            loading.style.display = 'none !important';
+            loading.style.display = 'none';
         }
-        loading.style.display = 'none !important';
     });
 
     $("#show_scores_button").on("click", () => {

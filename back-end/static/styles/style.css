@@ -169,6 +169,7 @@ body {
 }
 .text-in {
     position: absolute;
+    color: white;
 }
 #main {
     display: flex;
