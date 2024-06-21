@@ -1,6 +1,6 @@
 import { Config } from "./scripts/config.js";
 import { getVideo } from "./scripts/fetchUtils.js";
-import { stringTimeToSeconds } from "./scripts/utils.js";
+// import { popstate } from "./scripts/utils.js";
 
 // const serverUrl = Config.SERVER_URL // `${window.location.protocol}//${window.location.hostname}`;
 // const socket = io.connect(serverUrl);
@@ -9,21 +9,25 @@ let user_id;
 let paintings_ids;
 let poses;
 let videoDeleted = false;
-
+const confirm_btn = document.getElementById('confirmModal')
+const logout_btn = document.getElementById('logout_btn')
+const loading = document.getElementById('email-loading')
 $(async () => {
     const queryParams = new URLSearchParams(window.location.search);
-    const player = queryParams.get("player");
+    // const player = queryParams.get("player");
     user_id = queryParams.get("user_id");
     roomId = queryParams.get("roomId");
+    console.log(roomId)
     paintings_ids = queryParams.has("paintings_ids") ? queryParams.get("paintings_ids").split(',').map(Number) : [];
     poses = queryParams.has("poses") ? parseInt(queryParams.get("poses"), 10) : 0;
-    console.log(paintings_ids, poses)
+
     const endImg = document.getElementById("victoryImg");
     const endText = document.getElementById("final_title");
 
     endImg.src = "/static/assets/end/winner.gif";
     endText.innerHTML = "Congratulations, you win!";
     const videoId = queryParams.get("id");
+    console.log(videoId)
     if (videoId.normalize() === "No") {
         hideVideoElements();
         return;
@@ -40,7 +44,10 @@ $(async () => {
             alert("Please enter a valid email address.");
             return;
         }
-
+        if (loading.classList.contains('d-flex')) {
+            loading.style.display = 'flex';} else {
+            loading.classList.add('d-flex');
+        }
         // Fetch the video and send it as an attachment
         try {
             const video_path = video.path.startsWith("back-end/") ? video.path.replace("back-end/", "") : video.path;
@@ -65,16 +72,22 @@ $(async () => {
             }
         })
         .then((data) => {
-            alert("Video sent successfully!");
-            // delete the video
+            // alert("Video sent successfully!");
+            document.querySelector('#email-loading .text-in').textContent = 'Video sent!';
+            // loading.style.display = 'none !important';
+            loading.classList.remove('d-flex');
+            loading.style.display = 'none !important';
         })
         .catch((error) => {
             alert(error.message);
             console.error(error);
+            loading.style.display = 'none !important';
         });
         } catch (error) {
             console.error(error);
+            loading.style.display = 'none !important';
         }
+        loading.style.display = 'none !important';
     });
 
     $("#show_scores_button").on("click", () => {
@@ -109,54 +122,49 @@ $(async () => {
 
             if (response.ok) {
                 console.log("Video deleted successfully.");
+                window.onbeforeunload = null
+                window.location = `/logout?user_id=${user_id}`
+                videoDeleted = true;
             } else {
                 console.error("Error deleting the video.");
+                videoDeleted = false;
             }
         } catch (error) {
             console.error("An error occurred while deleting the video:", error);
+            videoDeleted = false;
         }
     }
-    async function deleteRoom() {
-        try {
-            const response = await fetch(`${Config.SERVER_URL}/delete/room/${roomId}`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
+    logout_btn.addEventListener('click', async function(event) {
+        console.log("beforeunload", videoDeleted)
+        showConfirmButton(event)
 
-            if (response.ok) {
-                console.log("Room deleted successfully.");
-            } else {
-                console.error("Error deleting the room.");
-            }
-        } catch (error) {
-            console.error("An error occurred while deleting the room:", error);
-        }
-    }
-    window.logout = async function() {
-        // socket.emit("player_leave", roomId, user_id)
-        window.location = `/logout?user_id=${user_id}`;
-
-    };
-    window.addEventListener('popstate', async function(event){
-        event.preventDefault();
+    });
+    confirm_btn.addEventListener('click', async function() {
+    // Reload the page
         console.log("beforeunload", videoDeleted)
         if (!videoDeleted) {
             console.log("deleting video")
             await deleteVideo();
-            videoDeleted = true; // Set a flag to avoid deleting multiple times
         }
-        await deleteRoom();
-            window.logout();
-    })
-    // window.onbeforeunload = async function() {
-    //     console.log("beforeunload", videoDeleted)
-    //     if (!videoDeleted) {
-    //         console.log("deleting video")
-    //         await deleteVideo();
-    //         videoDeleted = true; // Set a flag to avoid deleting multiple times
-    //     }
-    //     await deleteRoom();
-    // };
+    });
+
+
+    function showConfirmButton(event) {
+        event.preventDefault();
+        console.log('User clicked back button or reloaded the page');
+        // Show the confirmation modal
+        document.getElementById('confirmModal').style.display = 'block';
+    }
+    window.onbeforeunload = async function(event) {
+        event.preventDefault();
+
+        console.log("beforeunload", videoDeleted)
+        if (!videoDeleted) {
+            console.log("deleting video")
+            await deleteVideo();
+            videoDeleted = true;
+             // Set a flag to avoid deleting multiple times
+        }
+
+    };
 });

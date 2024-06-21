@@ -5,7 +5,6 @@ let startTime;
 let elapsedTime = 0;
 let timerInterval;
 
-// Utility Functions
 async function picture_ids_for_level(level) {
     const pictures_data = await getAllPictures();
     const picture_list = pictures_data.picturesList;
@@ -29,7 +28,6 @@ function normalizeKPs(poses, width, height) {
               name
           }));
 }
-
 
 function createPoseCanvas(canvas) {
     canvas.width = Config.WIDTH;
@@ -351,13 +349,16 @@ function drawImageAndSkeleton(canvas, source, keypoints) {
     }
 }
 const initGame_solo = async (levelId, poses, video, camCanvas, imgCanvas, user_id) => {
+    console.log('0')
+    const detector = window.detector
+    console.log('utils', detector)
     const level = await getLevel(levelId);
     const level_picture_ids = await picture_ids_for_level(level);
     let round = 0;
     let userVideoList = [];
-    const detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet, {
-            modelType: poseDetection.movenet.modelType.SINGLEPOSE_THUNDER,
-        });
+    console.log('1')
+
+    console.log('2')
     const pictureLoad = await createPictureLoader(detector, imgCanvas);
     let idRandom = level_picture_ids.sort(() => Math.random() - 0.5);
 

@@ -23,15 +23,14 @@ let gameData = {};
 let roomsData = [];
 let level;
 let poses;
+
 $(document).ready(async function() {
 
     addRoomBtn.on("click", function() {
-        // let room_id;
         const row = $(this).closest("tr");
         poses = row.find("#nPose_setted").val();
         level = row.find("#level_setted").val();
         createRoom(poses, level);
-
     });
 
     // Function to show the privacy policy popup
@@ -111,90 +110,12 @@ $(document).ready(async function() {
         console.log("roomsData:", roomsData);
     }
 
-
-    // function create_room_row(table, room_obj, row_id) {
-    //     const newRow = table.insertRow();
-    //     const isGrayedOut = !room_obj.free_space && !room_obj.clients.includes(uniqueId);
-    //     let iconButton;
-    //     // let clientsIcons = "";
-    //     // if (room_obj.players_mode === "2") {
-    //     //     if (room_obj.creator === uniqueId) {
-    //     //         if (room_obj.num_clients === 1) {
-    //     //             iconButton = createIconButton(`delete/room/${room_obj.room_id}`, "fa-solid fa-trash icon-color", deleteRoom, isGrayedOut);
-    //     //             clientsIcons = `<i id="you" class="fa-solid fa-user"></i><i class="fa-regular fa-user"></i>`;
-    //     //         } else if (room_obj.num_clients === 2) {
-    //     //             iconButton = createIconButton(`play/room/${room_obj.room_id}`, "fa-solid fa-play icon-color", play_versus, isGrayedOut);
-    //     //             clientsIcons = `<i id="you" class="fa-solid fa-user"></i><i class="fa-solid fa-user"></i>`;
-    //     //         }
-    //     //     } else if (room_obj.clients.includes(uniqueId)) {
-    //     //         if (room_obj.num_clients === 2) {
-    //     //             iconButton = createIconButton(`play/room/${room_obj.room_id}`, "fa-solid fa-play icon-color", play_versus, isGrayedOut);
-    //     //             clientsIcons = `<i id="you" class="fa-solid fa-user"></i><i class="fa-solid fa-user"></i>`;
-    //     //         }
-    //     //     } else {
-    //     //         if (room_obj.num_clients === 1) {
-    //     //             iconButton = createIconButton(`join/room/${room_obj.room_id}`, "fa-solid fa-right-to-bracket icon-color", joinRoom, isGrayedOut);
-    //     //             clientsIcons = `<i id="you" class="fa-regular fa-user"></i><i class="fa-solid fa-user"></i>`;
-    //     //         } else if (room_obj.num_clients === 2) {
-    //     //             iconButton = createIconButton(`play/room/${room_obj.room_id}`, "fa-solid fa-gamepad icon-color", play_versus, isGrayedOut);
-    //     //             clientsIcons = `<i id="you" class="fa-solid fa-user"></i><i class="fa-solid fa-user"></i>`;
-    //     //         }
-    //     //     }
-    //     // } else if (room_obj.players_mode === "1") {
-    //     //     clientsIcons = `<i id="you" class="fa-solid fa-user"></i>`;
-    //     //     if (room_obj.creator === uniqueId) {
-    //     //         iconButton = createIconButton(`play/room/${room_obj.room_id}`, "fa-solid fa-play icon-color", play_solo, isGrayedOut);
-    //     //     } else {
-    //     //         iconButton = createIconButton("#", "fa-solid fa-gamepad icon-color", play_solo, isGrayedOut);
-    //     //     }
-    //     // }
-    //     //
-    //     // console.log(iconButton)
-    //     iconButton = createIconButton(`play/room/${room_obj.room_id}`, "fa-solid fa-play icon-color", play_solo, isGrayedOut);
-    //     for (let i = 0; i < 5; i++) {
-    //         newRow.insertCell(i);
-    //     }
-    //
-    //     newRow.cells[0].innerHTML = `<b>${row_id}</b>`;
-    //     newRow.cells[1].textContent = room_obj.room_id;
-    //     // newRow.cells[2].innerHTML = clientsIcons;
-    //     newRow.cells[2].textContent = room_obj.n_pose;
-    //     // newRow.cells[4].textContent = (room_obj.players_mode === "2") ? room_obj.n_round: "-";;
-    //     newRow.cells[3].textContent = room_obj.level;
-    //     newRow.cells[4].appendChild(iconButton);
-    //
-    //     // if (isGrayedOut) {
-    //     //     newRow.classList.add("grayed-out");
-    //     //     newRow.cells[6].classList.add("unclickable");
-    //     // }
-    // }
-
-    // function createIconButton(href, iconClass, clickHandler, isGrayedOut) {
-    //     const button = document.createElement("a");
-    //     button.innerHTML = `<i class="${iconClass}""></i>`;
-    //
-    //     button.href = href;
-    //     // Check if the button should be neutralized (unclickable)
-    //     if (isGrayedOut) {
-    //         button.onclick = function(event) {
-    //             event.preventDefault(); // Prevent the default click behavior
-    //         };
-    //     } else {
-    //         button.onclick = function(event) {
-    //             event.preventDefault();
-    //             clickHandler(this);
-    //         };
-    //     }
-    //     return button;
-    // }
-
-
     window.logout = async function() {
         window.location = `/logout?user_id=${uniqueId}`;
 
     };
 
-window.onbeforeunload = null
+    window.onbeforeunload = null
 });
 
 

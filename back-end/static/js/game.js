@@ -6,8 +6,18 @@ let roomId;
 let user_id;
 const width = 1024;
 const aspectRatio = 1.77;
-
+const detectorPromise = new Promise((resolve) => {
+    window.addEventListener('load', async function() {
+        console.log('loading detector')
+        window.detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet, {
+            modelType: poseDetection.movenet.modelType.SINGLEPOSE_THUNDER,
+        });
+        console.log('detector loaded')
+        resolve(); // Resolve the promise
+    });
+});
 $(async () => {
+    await detectorPromise;
     const video = $("#video").get(0);
     const camCanvas = createPoseCanvas($("#camCanvas").get(0));
     const cCanvas = document.getElementById("camCanvas");

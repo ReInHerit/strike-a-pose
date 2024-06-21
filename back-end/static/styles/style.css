@@ -167,7 +167,9 @@ body {
     object-fit: cover;
     margin: 0 auto;
 }
-
+.text-in {
+    position: absolute;
+}
 #main {
     display: flex;
     flex-direction: column;
