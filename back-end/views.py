@@ -83,10 +83,10 @@ def superuser_required(view_func):
     return decorated_view
 
 
-@app.route("/", methods=["GET"])
+@app.route("/index", methods=["GET"])
 def index():
     session["end"] = False
-    return render_template("index.html")
+    return render_template("start.html")
 
 
 @app.route('/policy')
@@ -95,7 +95,7 @@ def policy():
     return render_template('policy.html', smtp_username=smtp_username)
 
 
-@app.route("/start", methods=["GET"])
+@app.route("/", methods=["GET"])
 def start():
     user_id = generate_new_user_id()
     print('/////////////////////////////', user_id, '////////////////////////////////////////////////////////////')
@@ -169,7 +169,7 @@ def logout():
         if room in rooms:
             rooms.remove(room)
     session["end"] = True
-    return redirect(url_for("index"))
+    return redirect(url_for("start"))
 
 
 @login_manager.user_loader
@@ -455,7 +455,7 @@ def admin_logout():
     # Clear the session variables
     session.pop('user_authenticated', None)
     session.pop('is_superuser', None)
-    return redirect(url_for('index'))
+    return redirect(url_for('start'))
 
 
 @app.route('/admin/upload', methods=['GET', 'POST'])

@@ -12,13 +12,8 @@ const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent.toLow
         console.log("Not Safari")
     }
 const addRoomBtn = $("#add-room-btn");
-// const joinRoomBtn = $("#join-room-btn");
-// const join_room_input = $("#roomid_textInput");
-// let serverRoomsData = [];
 const uniqueId = $("#user-random-id").text();
-// let isStartingGame = false;
 localStorage.setItem('privacyAccepted', 'false')
-let gameData = {};
 
 let roomsData = [];
 let level;
@@ -41,9 +36,7 @@ $(document).ready(async function() {
 
     // Event listener for the confirm button in the privacy policy popup
     $("#confirmButton").on("click", function () {
-        // Check if the checkbox is checked
         if ($("#acceptCheckbox").prop("checked")) {
-            // User has accepted the privacy policy, store the acceptance in localStorage
             localStorage.setItem('privacyAccepted', 'true');
             $("#privacyPopup").fadeOut();
             $("#overlay").fadeOut();
@@ -77,7 +70,6 @@ $(document).ready(async function() {
             }
 
             const json = await response.json();
-            // console.log(json.id)
             const levelObj = await getLevel(level);
             const level_picture_ids = await picture_ids_for_level(levelObj);
             const idRandom = level_picture_ids.sort(() => Math.random() - 0.5);

@@ -187,6 +187,7 @@ body {
 
 #container-rooms, #container-join {
     padding: 0;
+    max-width: 90vw;
 }
 
 .grayed-out, .unclickable, .grayed-out:nth-of-type(odd) {
@@ -588,32 +589,33 @@ input[type=number] {
 #policy_container {
     display: flex;
     flex-direction: column;
-    padding: 20px 20vw;
+    padding: 0px 5vw;
     position: fixed;
-    top: 0%;
-    left: 5%;
-    transform: translate(0%, 0%);
+    top: 0;
+    left: 0;
+    /* transform: translate(-50%, -50%); */
     overflow-y: scroll;
-    height: 100%;
+    height: 100vh;
 }
 
 #policy_container h1 {
     font-weight: bold;
-    font-size: 2rem;
-    margin-top: 2rem;
+    font-size: max(16px, min(6vw, 40px));
+    /*margin-top: 2rem;*/
     margin-bottom: 0;
+    padding: 2vh 0 0.5vh 0vh;
 }
 
 #policy_container h2 {
     font-weight: bold;
-    font-size: 1rem;
+    font-size: max(14px, min(3vw, 24px));
     margin: 0;
 }
 
 #policy_container p {
     margin-left: 1rem;
-    margin-right: 1rem;
-    font-size: 0.7rem;
+    /*margin-right: 1rem;*/
+    font-size: max(12px, min(2vw, 15px));
     margin-top: 0.5rem;
 }
 
