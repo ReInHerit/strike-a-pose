@@ -453,6 +453,10 @@ input[type=email]::placeholder {
     width: 100%;
 }
 
+.scrollable-cell {
+    height: 100px; /* Adjust this value as needed */
+    overflow-y: auto;
+}
 
 .fade-out {
     opacity: 0;

@@ -37,18 +37,13 @@ room_states = {}
 rooms = []
 rooms_to_delete = []
 
-# HOST = os.getenv('HOST', 'localhost')
-# PORT = os.getenv('PORT', '8000')
-# PROTOCOL = os.getenv('PROTOCOL', 'http')
-
 cwd = os.getcwd()
-print('///////////////////////////CWD///////////////////////////', cwd)
-server = os.getenv('SERVER_URL')
+
 privacy_policy_url = os.getenv('PRIVACY_POLICY_URL')
 smtp_username = os.getenv('SMTP_USERNAME')
 smtp_password = os.getenv('SMTP_PASSWORD')
 smtp_server = 'smtp.gmail.com'
-print('///////////////////////////SERVER///////////////////////////', server, privacy_policy_url)
+
 # Set video_directory based on the current working directory
 if os.path.exists(os.path.join(cwd, 'static')):
     video_directory = 'static/videos'
@@ -371,7 +366,7 @@ def admin_database_management():
             filename = secure_filename(file.filename)
 
             image_folder = os.path.join(app.config['UPLOAD_FOLDER'], category)
-            destination_folder = image_folder  # os.path.join('back-end', image_folder)
+            destination_folder = os.path.join('back-end', image_folder)
             if destination_folder and not os.path.exists(destination_folder):
                 os.makedirs(destination_folder)
             # Save the file to the desired path
@@ -700,7 +695,6 @@ def send_video():
         video = request.files['video']
         video_data = video.read()
         # Define your email server and credentials
-        # smtp_server = 'smtp.gmail.com'
         smtp_port = 587
 
         # Create a message object
@@ -731,9 +725,14 @@ def send_video():
                 final images. No files or images are stored in our system, and this e-mail will be promptly removed from our 
                 servers after the result video is generated and sent to you. We do not share your body images or personal 
                 information with any third-party services. Please see the <a href="{privacy_policy_url}"> Privacy Policy</a> for more details.
+                <br><br>
+                <strong><a href="https://www.reinherit.eu">ReInHerit</a> - Redefining the Future of Cultural Heritage</strong> 
+                <br>
+                This project has received funding from the European Union's Horizon 2020 research and innovation programme under
+                 grant agreement No 101004545. Visit <a href="https://www.reinherit-hub.eu">ReInHerit Digital Hub</a> for resources, information, and collaboration in cultural heritage and tourism.
             </div>
             '''
-
+        # body = body.encode('utf-8')
         msg.attach(MIMEText(body, 'html', 'utf-8'))
         # Attach the video file
         video_attachment = MIMEApplication(video_data, Name='video.mp4')  # Set the desired filename

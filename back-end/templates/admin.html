@@ -83,7 +83,7 @@
                     data-id="{{ picture.id }}">{{ picture.artwork_name }}</td>
                 <td class="editable" data-field="author_name" data-id="{{ picture.id }}">{{ picture.author_name }}</td>
                 <td class="editable" data-field="description" data-id="{{ picture.id }}">
-                  <div class="quill-container">{{ picture.description|safe }}</div>
+                  <div class="quill-container  scrollable-cell">{{ picture.description|safe }}</div>
                 </td>
                 <td class="editable" data-field="category" data-id="{{ picture.id }}">{{ picture.category }}</td>
                 <!-- Remove Picture Form -->
