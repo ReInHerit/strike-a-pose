@@ -676,20 +676,15 @@ def send_video():
 
             painting = Picture.query.get(painting_id)
             if painting:
-                print('////////////////////////////////////////////////////', painting.author_name, painting.artwork_name)
                 sanitized_description = sanitize_html_text(painting.description)
-                sanitized_author_name = sanitize_html_text(painting.author_name)
-                sanitized_artwork_name = sanitize_html_text(painting.artwork_name)
                 # description = html.escape(sanitized_text)
                 paintings_info.append({
-                    'author_name': sanitized_author_name,
-                    'artwork_name': sanitized_artwork_name,
                     'description': sanitized_description
                 })
 
             # Add painting details to the email body
         paintings_info_str = '\n'.join(
-            [f"Artwork {i + 1}: {info['author_name']} - {info['artwork_name']}: {info['description']}<br/>" for i, info in
+            [f"Artwork {i + 1}: {info['description']}<br/>" for i, info in
              enumerate(paintings_info)])
         # Attach the video file
         video = request.files['video']
@@ -707,13 +702,12 @@ def send_video():
         body = f"""
                 <html>
                 <body>
-                    <p>Dear User,</p>
-                    <p>Thank you for participating in this engagement experience with art.</p>
-                    <p>We are delighted to share with you the video capturing your graceful poses inspired by some of the masterpieces in our collection.</p>
-                    <p>Your interaction can inspire you for a deeper exploration of the following artworks:</p>
+                    <p>Thank you for using the Strike-A-Pose App of the ReInHerit Toolkit!</p>
+                    <p>Please, find attached video of your poses mirroring.</p>
+                    <p>The poses you played are related to the following artworks:</p>
                     {paintings_info_str}
-                    <p>Feel free to enjoy and share your experience in your social media.</p>
-                    <p>Best regards,<br/>The ReInHerit Consortium</p>
+                    <p>Feel free to enjoy and share your experience on social media.</p>
+                    <p>Kind regards,<br/>The ReInHerit Consortium</p>
                 </body>
                 </html>
                 """
