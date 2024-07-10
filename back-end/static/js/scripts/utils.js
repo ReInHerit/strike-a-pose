@@ -183,10 +183,13 @@ async function createImage(src) {
 
 function createPictureLoader(detector, imgCanvas) {
     return async (id) => {
+        const picture_detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet, {
+            modelType: poseDetection.movenet.modelType.SINGLEPOSE_THUNDER,
+        });
         const picture = await getPicture(id);
         $("#artwork_label").text(picture.artwork_name + " - " + picture.author_name);
         const img = await createImage(`${Config.SERVER_URL}${picture.path}`);
-        const imagePoses = await detector.estimatePoses(img);
+        const imagePoses = await picture_detector.estimatePoses(img);
         const imageKPs = normalizeKPs(imagePoses, img.width, img.height);
         console.log(imageKPs)
         const imageKPNames = imageKPs.map((kp) => kp.name);
@@ -204,6 +207,7 @@ function createPictureLoader(detector, imgCanvas) {
             imageKPNames,
             image_angles
         };
+        picture_detector.dispose();
     };
 }
 
@@ -430,6 +434,16 @@ const initGame_solo = async (levelId, poses, video, camCanvas, imgCanvas, user_i
 
 async function compute_match(detector, video, imageKPNames, image_angles, camCanvas) {
     console.log('before estimate poses')
+    console.log(video)
+    // const ghost_canvas = document.createElement('canvas');
+    // ghost_canvas.width = video.videoWidth;
+    // ghost_canvas.height = video.videoHeight;
+    // const ghost_ctx = ghost_canvas.getContext('2d');
+    // ghost_ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+    // ghost_ctx.translate(video.videoWidth, 0);
+    // ghost_ctx.scale(-1, 1);
+
+    // const videoPoses = await detector.estimatePoses(ghost_canvas, {flipHorizontal: true});
     const videoPoses = await detector.estimatePoses(video);
     console.log('after estimate poses')
     const videoKPs = normalizeKPs(videoPoses, video.videoWidth, video.videoHeight);
