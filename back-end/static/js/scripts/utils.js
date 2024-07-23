@@ -371,10 +371,10 @@ const initGame_solo = async (levelId, poses, video, camCanvas, imgCanvas, user_i
     let idRandom = level_picture_ids.sort(() => Math.random() - 0.5);
 
     const nPictures = Math.min(idRandom.length, parseInt(poses));
-
+    const selectedPictures = idRandom.slice(0, nPictures);
     const userId = user_id;
     const nextRound = async () => {
-        const id = idRandom[round];
+        const id = selectedPictures[round];
         const { imageKPNames, image_angles } = await pictureLoad(id);
         const imgQueue = queueGenerator(Config.VIDEO_SECONDS * Config.FRAME_RATE);
         $("#main").show();
@@ -394,7 +394,7 @@ const initGame_solo = async (levelId, poses, video, camCanvas, imgCanvas, user_i
                 } else {
                     // Prepare data for video production
                     const formData = new FormData();
-                    idRandom.forEach((pictureId) => {
+                    selectedPictures.forEach((pictureId) => {
                         console.log('picture_id', pictureId)
                         formData.append("picture_ids[]", pictureId);
                     });
