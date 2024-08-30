@@ -105,31 +105,20 @@ An Admin user can:
      - A pop-up will appear, seeking confirmation for the deletion.
      - Click on "Delete" to confirm the deletion process.
 ### How to play the game
-#### Accessing the Game:
+1. Visit http://localhost:8000 
 
-Visit http://localhost:8000 \
-Confirm the policy to proceed.
-#### Creating a Room:
+2. Confirm the policy to proceed. 
 
-To start a game, create a room by selecting choices on the right of "ADD ROOM."
-Click on the "+" icon to add the room to the list.
-- Room Configuration:
-  - MODE: Choose between two game modes: Solo or Versus.
-  - POSES: Specify the number of artworks to include in the game.
-  - LEVEL: Select the game level from one of those available.
-  - ROUNDS: For Versus mode only, determine the number of rounds to play.
-#### Solo Game:
-- Start the game by clicking on the room's "PLAY" icon. 
-- Try to match the poses in the displayed artworks. 
-- After successfully matching each pose, download the video of your performance.
-#### Versus Game:
-- Share the ROOM ID with a friend, who can then join when ready. 
-- The second player needs to insert the room ID in the ROOM ID field and click on the join icon. 
-- After joining, the game automatically starts, with the room creator initiating the first round. 
-- Respond to the poses on the screen, and after the first player completes the round, the second player begins. 
-- The game continues until all rounds are completed. 
-- Upon game completion, both players will be directed to the final web page.
-- The winner is announced, and players can download the video of their performances.
+3. Set up the challenge choosing:
+  - POSES: Specify the number of artworks to include in the game (1-4).
+  - CHALLENGE: Select the game level from one of those available.
+
+4. Start the game by clicking on "PLAY" button.
+
+5. Try to match the poses in the displayed artworks.
+
+6. After successfully matching all poses, input your email address to send you the video of your performance.
+
 
 ## Citation
 
