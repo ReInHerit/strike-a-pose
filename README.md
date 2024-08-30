@@ -1,123 +1,127 @@
 # ReInHerit Strike-a-pose
 
-This application is part of the **ReInHerit Toolkit**.
+**ReInHerit Strike-a-pose** is a web application that is part of the **ReInHerit Toolkit**. The application uses gamification to engage museum visitors by challenging them to replicate human poses from famous paintings or statues. The experience culminates in a video that can be shared on social media, showcasing the user's interaction with the museum's collection.
 
 ![ReInHerit Strike-a-pose logo](Strike-a-pose_logo.jpg "ReInHerit Strike-a-pose logo")
 
-
-**Gamification** is the process of exploiting strategies and game dynamics into scenarios that are not a game. 
-It has already been proved to be useful to enhance skills and competences in a variety of domains such as marketing, industry training and entertainment.
-Also, cultural heritage can benefit from a gamification approach which represents an opportunity to **engage visitors** to museums contents through the design of more entertaining, social and challenging digital learning scenarios, to help museums to move from the traditional “look and do not touch” toward a “play and interact” approach. 
-
-Strike-a-pose is a web application which performs analysis and evaluation of human poses compared to poses present in famous paintings or statues. 
-The user is challenged to reproduce in sequence the poses of some artworks from the museum's collections. 
-Once all the poses have been matched, the application allows the user to **generate a video** that can be saved for any social sharing and provide info on the artworks. 
-The video shows the user matching process and the overall interactive experience lived at the museum.
-
 This app won a Best Demo Honorable Mention award at ACM Multimedia 2022, the foremost conference on multimedia.
 
+1. [Features](#features)
+2. [Prerequisites](#prerequisites)
+3. [Installation and Setup](#installation-and-setup)
+   - [Email Setup](#email-setup)
+   - [Flask Secret Key Setup](#flask-secret-key-setup)
+   - [Server and Privacy Policy URLs](#server-and-privacy-policy-urls)
+   - [Superuser Creation](#superuser-creation)
+4. [Docker Setup](#docker-setup)
+5. [Accessing the Application](#accessing-the-application)
+6. [Admin User Management](#admin-user-management)
+7. [Managing Artworks](#managing-artworks)
+8. [How to Play](#how-to-play)
+9. [Citation](#citation)
+10. [Acknowledgements](#acknowledgements)
 
-## System set-up
-### Prerequisites
-In order to run this demo you need these software installed on your computer:
+## Features
+- **Gamification**: Engages users by challenging them to replicate poses from famous artworks.
+- **Video Generation**: Allows users to generate a video of their pose-matching experience for social sharing.
+- **Cultural Enrichment**: Provides information about the artworks, enhancing the museum experience.
+
+## Prerequisites
+To run this demo, ensure the following software is installed on your computer:
 - [Docker](https://docs.docker.com/get-docker/)
-- [Docker-compose](https://docs.docker.com/compose/install/)
 - Python 3.10 (or higher)
-#### Email setup
-To send emails to the users, the system needs to be configured with a valid Gmail account. Then, you will need to generate an App Password by following the instructions provided in the first point on this link: https://www.interviewqs.com/blog/py-email.
+## Installation and Setup
+### Email Setup
+To enable email notifications for users, the system must be configured with a valid Gmail account. Follow these steps:
 
-After generating the App Password, you will need to enter it, along with your email address, into a copy of the `back-end/.env_template` file. Additionally, make sure to remove the **_template** part of the file name, so the updated file should be named ___.env___. This configuration file, .env, will then be used by the application to authenticate with the email service.
-#### Flask secret key setup
-To generate a secret key for the flask application, in a console navigate to strike-a-pose/back-end/static/utility/ then use the following command:
-```
-python generate_secret_key.py
-```
-Then copy the generated key and paste it in the file .env file generated above, in the variable SECRET_KEY.
+1. Generate an App Password by following the instructions provided in this [guide](https://www.interviewqs.com/blog/py-email).
+2. Once you have the App Password, open the `back-end/.env_template` file.
+3. Enter your Gmail address and the generated App Password in the appropriate fields.
+4. Rename the `.env_template` file to `.env` by removing the `_template` suffix. This `.env` file will be used by the application to authenticate with the email service.
 
+### Flask Secret Key Setup
+Generate a secret key for the Flask application:
 
-#### Superuser generation
-To efficiently manage the database, a superuser is initially required. Follow these steps for superuser generation:
-1) open `back-end/superuser.py` with your preferred Integrated Development Environment (IDE) and locate the following lines: 
-```
-superuser = User(
-        username='superadmin',
-        email='superadmin@example.com',  # Set a unique and non-null email
-        is_superuser=True,
-        registered=True,  
-        confirmed=True,  
-    )
-superuser.set_password('superadminpassword')
-```
-Replace ___superadmin___, ___superadmin@example.com___ and ___superadminpassword___ with your desired username, email and password.
+1. Open a console and navigate to the `strike-a-pose/back-end/static/utility/` directory.
+2. Run the following command:
+    ```
+    python generate_secret_key.py
+    ```
+3. Copy the generated key and paste it into the .env file under the SECRET_KEY variable.
+### Server and Privacy Policy URLs
+Set the server and privacy policy URLs in the .env file:
+- **SERVER_URL**: The URL where the application is running.
+- **PRIVACY_POLICY_URL**: The URL of the privacy policy.
 
-2) in the console navigate to `back-end/` folder then use the following command:
+For local or Docker setups:
+``` 
+SERVER_URL=http://localhost:8000
+PRIVACY_POLICY_URL=http://localhost:8000/policy
 ```
-python superuser.py
-```
+
+### Superuser Creation
+To manage the database, a superuser is initially required. Follow these steps for superuser generation:
+1) Open `back-end/superuser.py` IDE, and set the superuser credentials with your desired username, email, and password.: 
+    ```
+    superuser = User(
+            username='superadmin',
+            email='superadmin@example.com',  # Set a unique and non-null email
+            is_superuser=True,
+            registered=True,  
+            confirmed=True,  
+        )
+    superuser.set_password('superadminpassword')
+    ```
+2) In the console navigate to `back-end/` and run:
+    ```
+    python superuser.py
+    ```
 The superuser can:
-- add new artworks to the database;
-- delete artworks from the database;
-- accept new admin user registrations;
-- delete admin users.
+- Add or delete artworks
+- Manage admin user registrations
 
 
-### Docker setup
+## Docker setup
 
-Be sure that **back-end/.env** file is correctly set up with the email and secret key configurations and that the file is added to .dockerignore and .gitignore
-Build the docker image with:
+Ensure the **.env** file is correctly configured and added to **.dockerignore** and **.gitignore**. Then:
+1. Build the docker image:
+    ```
+    docker build -t strike . 
+    ```
+2. Run the Docker container:
+    ```
+    docker run --env-file=back-end/.env -p 8000:8000 strike  
+    ```
+## Accessing the Application
+Once the application is running, open your web browser and go to http://localhost:8000.
 
-```
-docker build -t strike . 
-```
-then run it with the following command:
-```
-docker run --env-file=back-end/.env -p 8000:8000 strike  
-```
-### Browse to the application
-Open a web browser and go to the address: _localhost:8000_. 
-If security warnings appear, ignore them and proceed to the website.
+## Admin User Management
+To create a new admin user:
 
-### New Admin user generation
-You can also generate a new admin user by following these steps:
-1. Access the admin page by clicking on the ___ADMIN___ button located in the top-right corner of the screen. This action will redirect you to the admin page.
-2. Click on ___SignUp tab___ and fill the form with the requested field.
-3. A confirmation email will be sent to the email address provided. Click on the link in the email to confirm the registration.
-4. Next step is to wait for the superuser acceptance. Once the superuser has accepted the registration, you could log in with the credentials provided.
-An Admin user can:
-- add new artworks to the database;
-- delete artworks from the database.
-- 
-### To change the artworks that are shown in the system, follow the following steps:
-1. Select the ___ADMIN___ button located in the top-right corner of the screen. This action will redirect you to the admin page.
-2. Log in with a superuser or admin credentials;
-3. You are now able to manage artworks in the database through the following options:
-   - ADD: 
-     - A pop-up will prompt you to input the author's name, artwork name, description, category type and upload an image of the artwork.
-     - Click on "Choose File" to select an image from your hard disk. Note that the image must be in either .jpg or .png format.
-     - In the description field, the text can be formatted to include links to further websites. This will be the text that will be sent via email to the users.
-     - As for the categories, it's possible to select an existing category or enter a new one by choosing "New Category" in the first selection window.
-     - Press "**Add Artwork**" to include it in the database.
-     - The image will be stored in the corresponding folder for the category, located at `back-end/static/assets/<category>` (e.g. `back-end/static/assets/halfBust` for half-length pose and `back-end/static/assets/fullLength` for full-length pose); 
-   - EDIT:
-     - you can edit the author's name, artwork name, category type, and description of the artwork clicking on the corresponding cell of the table. 
-   - DELETE: 
-     - Click on the button associated with the row of the artwork you wish to delete.
-     - A pop-up will appear, seeking confirmation for the deletion.
-     - Click on "Delete" to confirm the deletion process.
-### How to play the game
+1. Go to the admin page by clicking on the ADMIN button in the top-right corner.
+2. Sign up and confirm your email.
+3. Wait for the superuser to approve your registration.
+
+Admin users can:
+- Add or delete artworks from the database
+### Managing Artworks
+To manage the artworks:
+1. Log in to the admin page with your credentials.
+2. You can now:
+   - **Add**: Upload new artworks and fill in the necessary details.
+   - **Edit**: Modify existing artwork details.
+   - **Delete**: Remove artworks from the database.
+
+### How to Play
 1. Visit http://localhost:8000 
 
-2. Confirm the policy to proceed. 
+2. accept the privacy policy. 
 
-3. Set up the challenge choosing:
-  - POSES: Specify the number of artworks to include in the game (1-4).
-  - CHALLENGE: Select the game level from one of those available.
+3. Choose the challenge settings (number of poses, difficulty level).
 
-4. Start the game by clicking on "PLAY" button.
+4. Start the game and match the poses.
 
-5. Try to match the poses in the displayed artworks.
-
-6. After successfully matching all poses, input your email address to send you the video of your performance.
+5. Enter your email to receive a video of your performance.
 
 
 ## Citation
