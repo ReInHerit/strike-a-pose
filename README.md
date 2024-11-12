@@ -123,6 +123,12 @@ To manage the artworks:
 
 5. Enter your email to receive a video of your performance.
 
+## Compatibility
+The application has been tested on the following mobile operating systems: Android (since v. 13) and iOS (up to 18.1), using the default browsers of each OS (i.e. Chrome and Safari).
+The app has been tested also on Windows with Edge, Chrome, Firefox browsers, and on macOS using Chrome and Firefox browsers.
+Compatibility with Safari on iOS/macOS depends on the interaction with Ad-blockers, which may block the functionality of the app. For this reason the default setup will warn users about this issue.
+
+
 
 ## Citation
 
