@@ -34,6 +34,11 @@ python generate_secret_key.py
 ```
 Then copy the generated key and paste it in the file .env file generated above, in the variable SECRET_KEY.
 
+## Compatibility
+The application has been tested on the following mobile operating systems: Android (since v. 13) and iOS (up to 18.1), using the default browsers of each OS (i.e. Chrome and Safari).
+The app has been tested also on Windows with Edge, Chrome, Firefox browsers, and on macOS using Chrome and Firefox browsers.
+Compatibility with Safari on iOS/macOS depends on the interaction with Ad-blockers, which may block the functionality of the app. For this reason the default setup will warn users about this issue.
+
 
 #### Superuser generation
 To efficiently manage the database, a superuser is initially required. Follow these steps for superuser generation:
